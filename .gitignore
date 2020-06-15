@@ -1,0 +1,12 @@
+*.swp
+*~
+/.*
+/build/
+/coverage/
+/doc/
+/vendor/
+!/.gitignore
+!/.rspec
+!/.rubocop.yml
+!/.solargraph.yml
+!/.yardopts

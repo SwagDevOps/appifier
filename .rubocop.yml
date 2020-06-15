@@ -1,0 +1,7 @@
+---
+inherit_gem:
+  kamaze-project:
+    - .rubocop.yml
+Naming/FileName:
+  Exclude:
+    - lib/stibium-delegation.rb
