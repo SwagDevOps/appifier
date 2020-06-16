@@ -19,7 +19,7 @@ group :development do
   gem 'rake', '~> 13.0'
   gem 'rubocop', '~> 0.79'
   gem 'rugged', '~> 1.0'
-  gem 'sys-proc'
+  gem 'sys-proc', '~> 1.1'
 end
 
 group :watch do
