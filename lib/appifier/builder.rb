@@ -79,7 +79,7 @@ class Appifier::Builder
     end
   end
 
-  # @retun [Pathname]
+  # @return [Pathname]
   def out_dir
     build_dir.join('out')
   end
@@ -110,9 +110,9 @@ class Appifier::Builder
     (docker? ? recipe : recipe_file).to_s
   end
 
-  # @return [Array<Pathname>]
+  # @return [Pathname]
   def call
-    -> { builds }.tap { build(downloadables) }.call
+    -> { builds }.tap { build(downloadables) }.call.last
   end
 
   protected
@@ -147,7 +147,7 @@ class Appifier::Builder
     build_dir do
       Pathname.new('recipes').join("#{recipe_file.basename('.*')}.yml").tap do |f|
         fs.mkdir_p(f.dirname)
-        fs.cp(recipe_file.to_s, f.realpath)
+        fs.cp(recipe_file.to_s, f)
       end
 
       self.logs.transform_values { |v| File.open(v, 'w') }.tap do |options|
