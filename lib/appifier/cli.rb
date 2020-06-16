@@ -19,9 +19,9 @@ class Appifier::Cli
 
   # Execute build for all given arguments
   #
-  # @param [Array<String>]
+  # @return [Array<Pathname>]
   def call
-    arguments.uniq.tap do |recipes|
+    arguments.uniq.yield_self do |recipes|
       recipes.map do |recipe|
         builder_class.new(recipe, **options).prepare!.call
       end.tap do |builds|
