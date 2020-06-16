@@ -1,0 +1,17 @@
+---
+major: 0
+minor: 0
+patch: 1
+authors: ['Dimitri Arrigoni']
+email: 'dimitri@arrigoni.me'
+date: '2020-06-15'
+summary: 'Simple wrapper built on top of pkg2appimage'
+description: 'Simplify AppImage creation with a wrapper on top of pkg2appimage'
+licenses: ['GPL-3.0']
+license_header: |
+  Copyright (C) 2017-2020 Dimitri Arrigoni <dimitri@arrigoni.me>
+  License GPLv3+: GNU GPL version 3 or later
+  <http://www.gnu.org/licenses/gpl.html>.
+  This is free software: you are free to change and redistribute it.
+  There is NO WARRANTY, to the extent permitted by law.
+homepage: 'https://github.com/SwagDevOps/appifier'
