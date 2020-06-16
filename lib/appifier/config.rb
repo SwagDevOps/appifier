@@ -10,8 +10,10 @@ class Appifier::Config < Hash
     @prefix = prefix
 
     self.tap do
-      self.class.defaults.merge(self.class.filter(from, prefix: self.prefix)).tap do |h|
-        h.each { |k, v| self[k] = v }
+      self.class.__send__(:filter, from, prefix: self.prefix).tap do |filtered|
+        self.class.defaults.merge(filtered).tap do |h|
+          h.each { |k, v| self[k] = v }
+        end
       end
     end.compact!.freeze
   end
@@ -24,12 +26,18 @@ class Appifier::Config < Hash
   class << self
     # @return [Hash{String => Object}]
     def defaults
+      # @formatter:off
       {
         'cache_dir' => nil,
         'recipes_dir' => Pathname.new(__dir__).realpath.join('recipes').to_s.freeze
       }
+      # @formatter:on
     end
 
+    protected
+
+    # @api private
+    #
     # @return [Hash{String => Object}]
     def filter(source, prefix:)
       {}.tap do |result|
