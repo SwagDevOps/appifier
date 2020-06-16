@@ -1,0 +1,44 @@
+app: Caprine
+lowerapp: caprine
+
+ingredients:
+  packages:
+    - caprine
+  script:
+    - set -eux
+    - rm -rf *.sh *.deb *.svg *.png VERSION
+    # script file -----------------------------------------------------
+    - SCRIPT=./ingredients.sh
+    - printf "#!%s sh\n" "$(which env || echo '/usr/bin/env')" > "${SCRIPT}"
+    - cat > "${SCRIPT}" << EOF
+    - set -eux
+    # variables ------------------------------------------------------
+    - BASE_URL='https://github.com/sindresorhus/caprine'
+    - ICON_URL='https://appimage.org/images/logo3.svg'
+    - RELEASE=\$(curl -L "\${BASE_URL}/releases" | grep -Eo '/releases/download/.*amd64\.deb' | head -1)
+    - URL="\${BASE_URL}\${RELEASE}"
+    - VERSION=\$(basename -- "\${RELEASE}" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
+    # output files ---------------------------------------------------
+    - echo "\${VERSION}" > VERSION
+    - wget --trust-server-names -c "\$ICON_URL" -O caprine.svg
+    - wget --trust-server-names -c "\$URL" -O "caprine-\${VERSION}.deb"
+    - EOF
+    - chmod +x "${SCRIPT}" && "${SCRIPT}"
+
+script:
+  - set -eux
+  # desktop file -----------------------------------------------------
+  - cat > caprine.desktop << EOF
+  - [Desktop Entry]
+  - Name=Caprine
+  - Exec=caprine %U
+  - Terminal=false
+  - Type=Application
+  - Icon=caprine
+  - StartupWMClass=Caprine
+  - Comment=Elegant Facebook Messenger desktop app
+  - Categories=GNOME;GTK;Network;InstantMessaging;
+  - EOF
+  # files tweaks -----------------------------------------------------
+  - ln -sfvr ../caprine.svg .
+  - ln -sfvr opt/Caprine/caprine usr/bin/caprine
