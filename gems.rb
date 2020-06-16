@@ -16,9 +16,10 @@ group :development do
     gem(*['kamaze-project'].concat([options]))
   end
 
-  gem 'sys-proc'
+  gem 'rake', '~> 13.0'
   gem 'rubocop', '~> 0.79'
   gem 'rugged', '~> 1.0'
+  gem 'sys-proc'
 end
 
 group :watch do
