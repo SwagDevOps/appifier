@@ -1,0 +1,21 @@
+app: Insomnia
+lowerapp: insomnia
+
+ingredients:
+  packages:
+    - insomnia
+  script:
+    - set -eu
+    # variables ------------------------------------------------------
+    - URL='https://updates.insomnia.rest/downloads/ubuntu/latest'
+    - DLD=$(curl -iD /dev/stdout $URL -o /dev/null | grep -i location | awk '{print $2}' | sed "s/\r//g")
+    - VERSION=$(echo $DLD | awk -F 'insomnia_' '{print $2}' | cut -d _ -f 1)
+    # output files ---------------------------------------------------
+    - echo "${VERSION}" > VERSION
+    - wget "$DLD" -O "insomnia-${VERSION}.deb"
+
+script:
+  - set -eu
+  - mv opt/Insomnia/ usr/share/insomnia/
+  - (cd usr/bin && ln -sfv ../share/insomnia/insomnia .)
+  - sed 's#Exec=/opt/Insomnia/insomnia #Exec=insomnia #' -i usr/share/applications/*.desktop

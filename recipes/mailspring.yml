@@ -1,0 +1,15 @@
+app: Mailspring
+lowerapp: mailspring
+
+ingredients:
+  packages:
+    - mailspring
+  script:
+    - set -eux
+    # variables ------------------------------------------------------
+    - URL='https://updates.getmailspring.com/download?platform=linuxDeb'
+    - DLD=$(curl -LIs -o /dev/null -w %{url_effective} "$URL")
+    - VERSION=$(echo $DLD | awk -F 'mailspring-' '{print $2}' | cut -d - -f 1)
+    # output files ---------------------------------------------------
+    - echo "${VERSION}" > VERSION
+    - curl "$DLD" -o "mailspring-${VERSION}.deb"

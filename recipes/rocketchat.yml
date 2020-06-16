@@ -1,0 +1,45 @@
+app: RocketChat
+lowerapp: rocketchat
+
+ingredients:
+  packages:
+    - rocketchat-desktop
+  script:
+    - set -eux
+    - rm -rf *.sh *.deb *.svg *.png VERSION
+    # script file -----------------------------------------------------
+    - SCRIPT=./ingredients.sh
+    - printf "#!%s sh\n" "$(which env || echo '/usr/bin/env')" > "${SCRIPT}"
+    - cat > "${SCRIPT}" << EOF
+    - set -eux
+    # variables ------------------------------------------------------
+    - BASE_URL='https://github.com/RocketChat/Rocket.Chat.Electron'
+    - ICON_URL='https://appimage.org/images/logo3.svg'
+    - RELEASE=\$(curl -L "\${BASE_URL}/releases" | grep -Eo '/releases/download/.*amd64\.deb' | head -1)
+    - URL="\${BASE_URL}\${RELEASE}"
+    - VERSION=\$(basename -- "\${RELEASE}" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
+    # output files ---------------------------------------------------
+    - echo "\${VERSION}" > VERSION
+    - wget --trust-server-names -c "\$ICON_URL" -O rocketchat-desktop.svg
+    - wget --trust-server-names -c "\$URL" -O "rocketchat-\${VERSION}.deb"
+    - EOF
+    - chmod +x "${SCRIPT}" && "${SCRIPT}"
+
+script:
+  - set -eux
+  # desktop file -----------------------------------------------------
+  - cat > rocketchat-desktop.desktop << EOF
+  - [Desktop Entry]
+  - Name=Rocket.Chat
+  - Exec=rocketchat-desktop %U
+  - Terminal=false
+  - Type=Application
+  - Icon=rocketchat-desktop
+  - StartupWMClass=Rocket.Chat
+  - MimeType=x-scheme-handler/rocketchat;
+  - Comment=Official OSX, Windows, and Linux Desktop Clients for Rocket.Chat
+  - Categories=GNOME;GTK;Network;InstantMessaging;
+  - EOF
+  # files tweaks -----------------------------------------------------
+  - ln -sfvr ../rocketchat-desktop.svg .
+  - ln -sfvr opt/Rocket.Chat/rocketchat-desktop usr/bin/rocketchat-desktop
