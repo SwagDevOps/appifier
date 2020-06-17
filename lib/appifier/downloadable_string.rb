@@ -3,39 +3,58 @@
 require_relative '../appifier'
 
 # Describe a dowloadable text file.
+#
+# @abstract
 class Appifier::DownloadableString < String
   autoload(:Pathname, 'pathname')
   autoload(:FileUtils, 'fileutils')
 
   def initialize(verbose: false)
-    require 'net/http'
-
     # noinspection RubySimplifyBooleanInspection
     @verbose = !!verbose
-    self.fs = (verbose ? FileUtils::Verbose : FileUtils)
 
-    warn("curl #{url}") if verbose?
-    Net::HTTP.get(uri).yield_self { |s| super(s) }
+    self.fs = (verbose? ? FileUtils::Verbose : FileUtils)
+    self.class.__send__(:fetch, self.url, verbose: verbose?).tap { |s| super(s) }
   end
 
   class << self
+    # @return [String]
     def url
-      ''
+      raise 'Not implemented'
     end
 
+    # Denote dowload will be executable or not.
+    #
+    # Default do ``false``
+    #
+    # @return [Boolean]
     def executable?
       false
+    end
+
+    protected
+
+    autoload(:URI, 'uri')
+
+    # Fetch given url to string.
+    #
+    # @api private
+    #
+    # @param [String] url
+    #
+    # @return [String]
+    def fetch(url, verbose: true)
+      require 'net/http'
+
+      warn("curl #{url}") if verbose
+
+      URI.parse(url).yield_self { |uri| Net::HTTP.get(uri) }
     end
   end
 
   # @return [String]
   def url
     self.class.url
-  end
-
-  # @return [URI]
-  def uri
-    URI.parse(self.url)
   end
 
   def verbose?
