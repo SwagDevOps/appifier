@@ -8,6 +8,7 @@
   'lib/**/resources/**/**',
   'lib/**/version.yml',
   'lib/**/recipes/*.yml',
+  'bin/appify',
 ].tap do |patterns|
   self.singleton_class.define_method(:files) do
     patterns.map { |m| Dir.glob(m) }.flatten.keep_if { |f| File.file?(f) }.sort
@@ -41,6 +42,13 @@ Gem::Specification.new do |s|
   ]
 
   #{@dependencies.keep(:runtime).to_s.lstrip}
+
+  s.bindir = "bin"
+  s.executables = [
+    <?rb for file in files.keep_if { |fp| fp.match(%r{^bin/}) } ?>
+    #{"%s," % File.basename(file).yield_self { |s| quote(s) } }
+    <?rb end ?>
+  ]
 end
 
 # Local Variables:
