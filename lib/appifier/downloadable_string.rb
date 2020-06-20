@@ -47,8 +47,9 @@ class Appifier::DownloadableString < String
       require 'net/http'
 
       warn("curl #{url}") if verbose
-
-      URI.parse(url).yield_self { |uri| Net::HTTP.get(uri) }
+      URI.parse(url).yield_self do |uri|
+        uri.scheme == 'file' ? Pathname.new(uri.path).read : Net::HTTP.get(uri)
+      end
     end
   end
 
