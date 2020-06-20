@@ -8,6 +8,7 @@
   'lib/**/resources/**/**',
   'lib/**/version.yml',
   'lib/**/recipes/*.yml',
+  'lib/**/Dockerfile',
   'bin/appify',
 ].tap do |patterns|
   self.singleton_class.define_method(:files) do

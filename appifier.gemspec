@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
     ".yardopts",
     "bin/appify",
     "lib/appifier.rb",
+    "lib/appifier/Dockerfile",
     "lib/appifier/builder.rb",
     "lib/appifier/bundled.rb",
     "lib/appifier/cli.rb",
