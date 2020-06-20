@@ -6,7 +6,7 @@ require_relative '../appifier'
 class Appifier::Dockerfile < Appifier::DownloadableString
   class << self
     def url
-      'https://raw.githubusercontent.com/AppImage/pkg2appimage/master/Dockerfile'
+      "file://#{Pathname.new(__dir__).join('Dockerfile')}"
     end
   end
 end
