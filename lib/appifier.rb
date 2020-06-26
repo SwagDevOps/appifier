@@ -20,6 +20,8 @@ module Appifier
     PkgScriptDocker: 'pkg_script_docker',
     PkgScript: 'pkg_script',
     Dockerfile: 'dockerfile',
+    Recipe: 'recipe',
+    Integration: 'integration',
     Shell: 'shell',
     # system ------------------------------------------------------
     Bundled: 'bundled',
@@ -29,6 +31,9 @@ module Appifier
 
   include(Bundled).tap do
     require 'bundler/setup' if bundled?
-    require 'kamaze/project/core_ext/pp' if development?
+
+    if Gem::Specification.find_all_by_name('kamaze-project').any?
+      require 'kamaze/project/core_ext/pp' if development?
+    end
   end
 end
