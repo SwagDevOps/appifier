@@ -28,6 +28,7 @@ GEM
     equatable (0.6.1)
     ffi (1.13.1)
     github-markup (3.0.4)
+    iniparser (1.0.1)
     interesting_methods (0.1.2)
     kamaze-version (1.0.2)
       dry-inflector (~> 0.1)
@@ -112,6 +113,7 @@ PLATFORMS
 
 DEPENDENCIES
   github-markup (~> 3.0)
+  iniparser (~> 1.0)
   interesting_methods (~> 0.1)
   kamaze-project!
   listen (~> 3.2)

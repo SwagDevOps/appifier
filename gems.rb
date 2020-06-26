@@ -9,6 +9,7 @@ source 'https://rubygems.org'
 git_source(:github) { |name| "https://github.com/#{name}.git" }
 
 group :default do
+  gem 'iniparser', '~> 1.0'
 end
 
 group :development do
