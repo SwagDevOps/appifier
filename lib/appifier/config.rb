@@ -27,26 +27,30 @@ class Appifier::Config < Hash
 
   class << self
     # @return [Hash{String => Object}]
-    def defaults
+    def defaults # rubocop:disable Metrics/AbcSize
       # @formatter:off
       {
-        cache_dir: nil,
+        cache_dir: whoami.fetch(:dir).join('.local', 'cache', 'appifier'),
         recipes_dir: Pathname.new(__dir__).realpath.join('recipes').to_s.freeze,
         # integration values --------------------------------------------------
-        applications_dir: home.join('Applications'),
-        bin_dir: home.join('.local', 'bin'),
-        desktops_dir: home.join('.local', 'share', 'applications'),
+        applications_dir: whoami.fetch(:dir).join('Applications'),
+        bin_dir: whoami.fetch(:dir).join('.local', 'bin'),
+        desktops_dir: whoami.fetch(:dir).join('.local', 'share', 'applications'),
       }.transform_keys { |k| k.to_s.freeze }
       # @formatter:on
     end
 
     protected
 
-    # Get home directory for current user.
+    # Return the ``/etc/passwd`` information for the current user.
     #
-    # @return [Pathname]
-    def home
-      Pathname.new(Etc.getpwnam(Etc.getlogin).dir)
+    # @api private
+    #
+    # @return [Struct{Symbol => Object}]
+    def whoami
+      Etc.getpwnam(Etc.getlogin).to_h.tap do |h|
+        h[:dir] = Pathname.new(h[:dir])
+      end
     end
 
     # @api private
