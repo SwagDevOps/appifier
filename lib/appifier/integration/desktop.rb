@@ -8,11 +8,6 @@ autoload(:Pathname, 'pathname')
 class Appifier::Integration::Desktop < Pathname
   autoload(:IniParser, 'iniparser')
 
-  # @param [String|Pathname] dir
-  def initialize(dir)
-    Dir.glob("#{dir}/*.desktop").fetch(0).yield_self { |fp| super(fp) }
-  end
-
   # @return [Hash]
   def parse
     IniParser::Parser.new(read).parse

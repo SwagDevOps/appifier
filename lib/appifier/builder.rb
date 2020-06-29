@@ -7,20 +7,18 @@ class Appifier::Builder
   autoload(:Pathname, 'pathname')
   autoload(:FileUtils, 'fileutils')
   autoload(:Etc, 'etc')
-  autoload(:YAML, 'yaml')
   autoload(:Open3, 'open3')
 
-  # @return [String]
+  # @return [Appifier::Recipe]
   attr_reader :recipe
 
   include(Appifier::Shell)
 
   # @param [String] recipe
   # @param [Boolean] verbose
-  def initialize(recipe, verbose: false, docker: true, config: Appifier::Config.new, arch: RbConfig::CONFIG.fetch('host_cpu')) # rubocop:disable Layout/LineLength
-    self.recipe = recipe
-
+  def initialize(recipe, verbose: false, docker: true, install: false, config: Appifier::Config.new, arch: RbConfig::CONFIG.fetch('host_cpu')) # rubocop:disable Layout/LineLength, Metrics/ParameterLists
     @config = config
+    @recipe = Appifier::Recipe.new(recipe, config: config).freeze
     # noinspection RubyStringKeysInHashInspection
     @env = { 'ARCH' => arch }
     # noinspection RubySimplifyBooleanInspection
@@ -28,19 +26,27 @@ class Appifier::Builder
     # noinspection RubySimplifyBooleanInspection
     @docker = !!docker
     @fs = verbose ? FileUtils::Verbose : FileUtils
-    @tmpdir = config.fetch('cache_dir') do
-      require 'tmpdir' unless Dir.respond_to?(:tmpdir)
-
-      Pathname.new(Dir.tmpdir).realpath.join("pkg2appimage.#{Etc.getpwnam(Etc.getlogin).uid}")
-    end.yield_self { |path| Pathname.new(path) }
+    # noinspection RubySimplifyBooleanInspection
+    @installable = !!install
+    @tmpdir = config.fetch('cache_dir')
   end
 
   def verbose?
     @verbose
   end
 
+  # Denote build will be run in a docker context.
+  #
+  # @return [Boolean]
   def docker?
     @docker
+  end
+
+  # Denote install will be run after build.
+  #
+  # @return [Boolean]
+  def installable?
+    @installable
   end
 
   # @return [Hash{Symbol => Pathname}]
@@ -60,15 +66,6 @@ class Appifier::Builder
     end
   end
 
-  def app_name
-    YAML.safe_load(recipe_file.read).fetch('app')
-  end
-
-  # @return [Pathname]
-  def recipe_file
-    recipes_dir.realpath.join("#{recipe}.yml").realpath
-  end
-
   # @return [Pathname|Object]
   def build_dir(&block)
     tmpdir.tap do |dir|
@@ -79,18 +76,7 @@ class Appifier::Builder
     end
   end
 
-  # @return [Pathname]
-  def out_dir
-    build_dir.join('out')
-  end
-
-  # @return [Array<Pathname>]
-  def builds
-    Dir.glob("#{out_dir}/*.AppImage").map do |fp|
-      Pathname.new(fp)
-    end.sort_by { |fp| File.mtime(fp) }
-  end
-
+  # @return [Array<Appifier::DownloadableString>]
   def downloadables
     # @formatter:off
     {
@@ -104,15 +90,21 @@ class Appifier::Builder
 
   # Target used during build.
   #
-  # Differs depending on docker or raw script execution.
-  # ``pkg2appimage``
+  # Differs depending on docker or raw script execution:
+  #
+  # * ``pkg2appimage-with-docker``
+  # * ``pkg2appimage``
   def target
-    (docker? ? recipe : recipe_file).to_s
+    (docker? ? recipe : recipe.realpath).to_s
   end
 
   # @return [Pathname]
   def call
-    -> { builds }.tap { build(downloadables) }.call.last
+    build(downloadables)
+
+    # rubocop:disable Layout/LineLength
+    Appifier::Integration.new(build_dir.join('out'), recipe: recipe, config: config, verbose: verbose?, install: installable?).call
+    # rubocop:enable Layout/LineLength,
   end
 
   protected
@@ -132,11 +124,6 @@ class Appifier::Builder
   # @return [Appifier::Config]
   attr_reader :config
 
-  # @return [Pathname]
-  def recipes_dir
-    Pathname.new(config.fetch('recipes_dir'))
-  end
-
   # @raise [ArgumentError]
   def recipe=(recipe)
     @recipe = recipe.to_sym
@@ -145,9 +132,9 @@ class Appifier::Builder
   # @param [Array<Appifier::Downloadable>] scripts
   def build(scripts) # rubocop:disable Metrics/AbcSize
     build_dir do
-      Pathname.new('recipes').join("#{recipe_file.basename('.*')}.yml").tap do |f|
+      Pathname.new('recipes').join("#{recipe.filename}.yml").tap do |f|
         fs.mkdir_p(f.dirname)
-        fs.cp(recipe_file.to_s, f)
+        fs.cp(recipe.file.to_s, f)
       end
 
       self.logs.transform_values { |v| File.open(v, 'w') }.tap do |options|
