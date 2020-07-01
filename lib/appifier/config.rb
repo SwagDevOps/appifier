@@ -30,7 +30,7 @@ class Appifier::Config < Hash
     def defaults # rubocop:disable Metrics/AbcSize
       # @formatter:off
       {
-        cache_dir: whoami.fetch(:dir).join('.local', 'cache', 'appifier'),
+        cache_dir: whoami.fetch(:dir).join('.cache', 'appifier'),
         recipes_dir: Pathname.new(__dir__).realpath.join('recipes').to_s.freeze,
         # integration values --------------------------------------------------
         applications_dir: whoami.fetch(:dir).join('Applications'),
