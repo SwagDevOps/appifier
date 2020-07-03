@@ -6,6 +6,8 @@ require_relative '../integration'
 class Appifier::Integration::Install
   autoload(:FileUtils, 'fileutils')
   autoload(:Pathname, 'pathname')
+  autoload(:SecureRandom, 'securerandom')
+  autoload(:DesktopBuilder, "#{__dir__}/install/desktop_builder")
 
   include(Appifier::Shell)
 
@@ -17,6 +19,7 @@ class Appifier::Integration::Install
     @source = Pathname.new(source).realpath.freeze
     @target = Pathname.new(target).freeze
     @config = config
+    @backup = Pathname.new(target).dirname.join(".#{target.basename}.#{SecureRandom.hex}").freeze
   end
 
   # Extracted files path.
@@ -28,10 +31,14 @@ class Appifier::Integration::Install
 
   def call
     prepared do |dir|
-      make_icon(dir).tap { |icon| make_desktop(dir, icon) }
-      make_executable(dir, source)
-      symlimk_desktop(dir)
-      symlimk_executable(dir)
+      dir.tap do
+        make_desktop(dir)
+        make_icon(dir)
+
+        make_executable(dir, source)
+        symlimk_desktop(dir)
+        symlimk_executable(dir)
+      end
     end
   end
 
@@ -46,21 +53,33 @@ class Appifier::Integration::Install
 
   attr_reader :fs
 
+  # AppImage source.
+  #
   # @return [Pathname]
   attr_reader :source
 
+  # Install directory.
+  #
   # @return [Pathname]
   attr_reader :target
 
+  # Backup directory.
+  #
+  # @return [Pathname]
+  attr_reader :backup
+
   attr_reader :config
 
-  def prepared(&block)
+  def prepared(&block) # rubocop:disable Metrics/AbcSize
     target.tap do |dir|
-      if block
-        fs.rm_rf(dir)
-        fs.mkdir_p(dir)
+      (fs.mv(dir, backup) if dir.exist?).tap { fs.mkdir_p(dir) }
 
-        return block.call(dir)
+      begin
+        return block.call(dir).tap { fs.rm_rf(backup) }
+      rescue StandardError, SignalException
+        fs.rm_rf(dir).tap { fs.mv(backup, dir) }
+
+        raise
       end
     end
   end
@@ -73,31 +92,40 @@ class Appifier::Integration::Install
 
   # @return [Pathname]
   def make_icon(dir)
-    dir.join("icon#{extraction.icon.extname}").tap do |dir_icon|
-      fs.cp(extraction.icon, dir_icon)
-      begin
-        sh('gio', 'set', dir.to_s, '-t', 'string', 'metadata::custom-icon', "file://#{dir_icon}")
-      rescue RuntimeError => e
-        warn(e) unless verbose?
+    dir.join('.icon').tap do |icon_link|
+      dir.join("icon#{extraction.icon.extname}").tap do |icon_path|
+        fs.cp(extraction.icon, icon_path)
+        fs.ln_sf(icon_path, dir.join('.icon'))
       end
+
+      apply_icon(dir, icon_link)
     end
+  end
+
+  # Apply given icon on given directory.
+  #
+  # @see https://www.commandlinux.com/man-page/man1/gvfs-set-attribute.1.html
+  # @see https://www.mankier.com/1/gio#set
+  def apply_icon(dir, icon_path)
+    sh('gio', 'set', dir.to_s, '-t', 'string', 'metadata::custom-icon', "file://#{icon_path}")
+  rescue RuntimeError => e
+    warn(e) unless verbose?
   end
 
   # Return path to installed desktop.
   #
   # @return [Pathname]
-  def make_desktop(dir, icon)
-    Appifier::Integration::Desktop.new(extraction.desktop).yield_self do |desktop|
-      desktop.alter(dir: dir, icon: icon, exec_params: parameters.fetch('exec_params')).yield_self do |content|
-        return dir.join("#{parameters.fetch('name')}.desktop").tap { |file| file.write(content) }
-      end
-    end
+  def make_desktop(dir)
+    DesktopBuilder.new(extraction.desktop.to_s, dir.to_s, parameters: parameters, config: config).call
   end
 
   def symlimk_desktop(dir)
-    config.fetch('desktops_dir').yield_self do |target_dir|
-      fs.mkdir_p(target_dir)
-      fs.ln_sf(dir.join("#{parameters.fetch('name')}.desktop"), target_dir)
+    (parameters['desktop']&.fetch('name', nil) || extraction.desktop.basename('.desktop')).tap do |name|
+      config.fetch('desktops_dir').yield_self do |target_dir|
+        fs.mkdir_p(target_dir)
+
+        return fs.ln_sf(dir.join('app.desktop'), target_dir.join("#{name}.desktop"))
+      end
     end
   end
 
