@@ -4,10 +4,6 @@ require_relative '../appifier'
 
 # Config from environment variables.
 class Appifier::Config < Hash
-  autoload(:YAML, 'yaml')
-  autoload(:Etc, 'etc')
-  autoload(:Pathname, 'pathname')
-
   def initialize(from: ENV, prefix: 'APPIFIER')
     @prefix = prefix
 
@@ -26,7 +22,9 @@ class Appifier::Config < Hash
   end
 
   class << self
+    autoload(:Etc, 'etc')
     autoload(:Pathname, 'pathname')
+    autoload(:YAML, 'yaml')
 
     # @return [Hash{String => Object}]
     def defaults # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
@@ -47,27 +45,27 @@ class Appifier::Config < Hash
       # @formatter:on
     end
 
+    protected
+
     # Get path for an user directory.
     #
     # @api private
     # @see https://wiki.archlinux.org/index.php/XDG_Base_Directory#User_directories
     #
     # @return [Pathname]
-    def xdg_dir(type)
+    def xdg_dir(type, env: ENV)
       # @formatter:off
       {
         cache: '.cache',
         config: '.config',
       }.fetch(type.to_sym).yield_self do |path| # @formatter:on
-        ENV.fetch("XDG_#{type.to_s.upcase}_HOME") do
+        env.fetch("XDG_#{type.to_s.upcase}_HOME") do
           whoami.fetch(:dir).join(path)
         end.yield_self do |dir|
           Pathname.new(dir)
         end
       end
     end
-
-    protected
 
     # Return the ``/etc/passwd`` information for the current user.
     #
