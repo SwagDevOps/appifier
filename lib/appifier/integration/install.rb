@@ -38,6 +38,7 @@ class Appifier::Integration::Install
         make_executable(dir, source)
         symlimk_desktop(dir)
         symlimk_executable(dir)
+        clean
       end
     end
   end
@@ -82,6 +83,10 @@ class Appifier::Integration::Install
         raise
       end
     end
+  end
+
+  def clean
+    extraction&.tap { |dir| fs.rm_rf(dir) }
   end
 
   def make_executable(dir, executable)
