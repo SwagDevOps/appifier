@@ -43,10 +43,6 @@ class Appifier::Integration::Install
     end
   end
 
-  def verbose?
-    @verbose
-  end
-
   protected
 
   # @return [Hash]
