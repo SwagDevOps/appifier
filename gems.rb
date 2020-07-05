@@ -10,6 +10,7 @@ git_source(:github) { |name| "https://github.com/#{name}.git" }
 
 group :default do
   gem 'iniparser', '~> 1.0'
+  gem 'kamaze-version', '~> 1.0'
   gem 'liquid', '~> 4.0'
 end
 
