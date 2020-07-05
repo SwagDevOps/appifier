@@ -36,6 +36,9 @@ class Appifier::Config < Hash
         applications_dir: whoami.fetch(:dir).join('Applications'),
         bin_dir: whoami.fetch(:dir).join('.local', 'bin'),
         desktops_dir: whoami.fetch(:dir).join('.local', 'share', 'applications'),
+        config_dir: ENV.fetch('XDG_CONFIG_HOME', whoami.fetch(:dir).join('.config')).yield_self do |dir|
+          Pathname.new(dir.to_s).join('appifier')
+        end
       }.transform_keys { |k| k.to_s.freeze }
       # @formatter:on
     end
