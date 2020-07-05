@@ -29,9 +29,13 @@ class Appifier::Recipe
     realpath.to_path
   end
 
-  # @return [Pathname]
-  def dir
-    Pathname.new(config.fetch('recipes_dir'))
+  # @return [Array<Pathname>]
+  def dirs
+    config.fetch('recipes_path').yield_self do |value|
+      value.is_a?(String) ? [value] : value.to_a
+    end.map do |value|
+      Pathname.new(value)
+    end.uniq
   end
 
   # @return [Hash{String => Object}]
@@ -49,9 +53,15 @@ class Appifier::Recipe
     file.read
   end
 
+  # @raise [Errno::ENOENT]
+  #
   # @return [Pathname]
   def realpath
-    self.dir.realpath.join("#{name}.yml").realpath
+    dirs.map do |dir|
+      dir.join("#{name}.yml")
+    end.reject do |fp|
+      !fp.file? and fp.dirname.to_s != dirs.last.to_s
+    end.fetch(0).realpath
   end
 
   alias file realpath

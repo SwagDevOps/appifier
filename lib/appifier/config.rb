@@ -29,17 +29,21 @@ class Appifier::Config < Hash
     autoload(:Pathname, 'pathname')
 
     # @return [Hash{String => Object}]
-    def defaults # rubocop:disable Metrics/AbcSize
+    def defaults # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       # @formatter:off
       {
         cache_dir: xdg_dir(:cache).join('appifier'),
-        recipes_dir: Pathname.new(__dir__).realpath.join('recipes').to_s.freeze,
         # integration values --------------------------------------------------
         applications_dir: whoami.fetch(:dir).join('Applications'),
         bin_dir: whoami.fetch(:dir).join('.local', 'bin'),
         desktops_dir: whoami.fetch(:dir).join('.local', 'share', 'applications'),
         config_dir: xdg_dir(:config).join('appifier'),
-      }.transform_keys { |k| k.to_s.freeze }
+      }.tap do |defaults|
+        defaults[:recipes_path] = [
+          defaults.fetch(:config_dir).join('recipes'), # user defined recipes
+          Pathname.new(__dir__).realpath.join('recipes'),
+        ].map(&:to_s).freeze
+      end.transform_keys { |k| k.to_s.freeze }
       # @formatter:on
     end
 
