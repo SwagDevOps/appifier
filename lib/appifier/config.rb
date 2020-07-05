@@ -3,8 +3,6 @@
 require_relative '../appifier'
 
 # Config from environment variables.
-#
-# @see https://wiki.archlinux.org/index.php/XDG_Base_Directory
 class Appifier::Config < Hash
   autoload(:YAML, 'yaml')
   autoload(:Etc, 'etc')
@@ -28,23 +26,41 @@ class Appifier::Config < Hash
   end
 
   class << self
+    autoload(:Pathname, 'pathname')
+
     # @return [Hash{String => Object}]
-    def defaults # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def defaults # rubocop:disable Metrics/AbcSize
       # @formatter:off
       {
-        cache_dir: ENV.fetch('XDG_CACHE_HOME', whoami.fetch(:dir).join('.cache')).yield_self do |dir|
-          Pathname.new(dir.to_s).join('appifier')
-        end,
+        cache_dir: xdg_dir(:cache).join('appifier'),
         recipes_dir: Pathname.new(__dir__).realpath.join('recipes').to_s.freeze,
         # integration values --------------------------------------------------
         applications_dir: whoami.fetch(:dir).join('Applications'),
         bin_dir: whoami.fetch(:dir).join('.local', 'bin'),
         desktops_dir: whoami.fetch(:dir).join('.local', 'share', 'applications'),
-        config_dir: ENV.fetch('XDG_CONFIG_HOME', whoami.fetch(:dir).join('.config')).yield_self do |dir|
-          Pathname.new(dir.to_s).join('appifier')
-        end
+        config_dir: xdg_dir(:config).join('appifier'),
       }.transform_keys { |k| k.to_s.freeze }
       # @formatter:on
+    end
+
+    # Get path for an user directory.
+    #
+    # @api private
+    # @see https://wiki.archlinux.org/index.php/XDG_Base_Directory#User_directories
+    #
+    # @return [Pathname]
+    def xdg_dir(type)
+      # @formatter:off
+      {
+        cache: '.cache',
+        config: '.config',
+      }.fetch(type.to_sym).yield_self do |path| # @formatter:on
+        ENV.fetch("XDG_#{type.to_s.upcase}_HOME") do
+          whoami.fetch(:dir).join(path)
+        end.yield_self do |dir|
+          Pathname.new(dir)
+        end
+      end
     end
 
     protected
