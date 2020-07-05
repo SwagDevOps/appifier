@@ -13,37 +13,33 @@ class Appifier::Integration::Extraction < Pathname
   # @return [Pathname]
   attr_reader :source
 
+  # @return [Array<String>]
+  attr_reader :extractables
+
   def initialize(source, verbose: false)
     # noinspection RubySimplifyBooleanInspection
     @verbose = !!verbose
-    @extracted = false
     @source = Pathname.new(source).realpath.freeze
+    @extractables = %w[*.desktop .DirIcon *.svg *.png].map(&:freeze).freeze
 
-    self.class.__send__(:mkdir, verbose: verbose?).tap { |tmpdir| super(tmpdir) }
+    self.class.__send__(:mkdir, verbose: verbose?).tap { |tmpdir| super(tmpdir).freeze }
   end
 
   def verbose?
     @verbose
   end
 
-  # Denote extraction is done.
-  #
-  # @return [Boolean]
-  def extracted?
-    @extracted
-  end
-
   # Extracted (unless done) and execute given block.
   def call(&block)
-    unless extracted?
+    block.tap do
       Dir.chdir(self) do
-        %w[*.desktop .DirIcon *.png *.svg].each do |target|
+        extractables.each do |target|
+          next if extracted?(target)
+
           sh(source.realpath.to_s, '--appimage-extract', target)
         end
       end
-    end
-
-    block&.call
+    end.call
   end
 
   # Get path to desktop file.
@@ -66,15 +62,36 @@ class Appifier::Integration::Extraction < Pathname
     end
   end
 
+  protected
+
+  # Denote given pattern is already extracted.
+  #
+  # @return [Boolean]
+  def extracted?(target)
+    false.tap do
+      Dir.chdir(self) do
+        return true unless Dir.glob("squashfs-root/#{target}").empty?
+
+        return true if %w[.png .svg].include?(File.extname(target.to_s)) and File.file?('squashfs-root/.DirIcon')
+      end
+    end
+  end
+
   class << self
+    autoload(:SecureRandom, 'securerandom')
+
     protected
 
+    # @api private
+    #
     # @return [Pathname]
     def mkdir(verbose: false)
       require 'tmpdir'
 
-      Pathname.new(Dir.mktmpdir("#{self.name.gsub('::', '-')}.", Dir.tmpdir)).tap do |tmpdir|
-        warn("mkdir #{tmpdir}") if verbose
+      [name.gsub('::', ''), SecureRandom.hex].join('.').yield_self do |dirname|
+        Pathname.new(Dir.tmpdir).join(dirname).tap do |tmpdir|
+          (verbose ? FileUtils::Verbose : FileUtils).mkdir(tmpdir)
+        end
       end
     end
   end
