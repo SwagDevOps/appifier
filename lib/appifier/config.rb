@@ -31,6 +31,7 @@ class Appifier::Config < Hash
       # @formatter:off
       {
         cache_dir: xdg_dir(:cache).join('appifier'),
+        build_arch: host_arch.to_s,
         # integration values --------------------------------------------------
         applications_dir: whoami.fetch(:dir).join('Applications'),
         bin_dir: whoami.fetch(:dir).join('.local', 'bin'),
@@ -46,6 +47,18 @@ class Appifier::Config < Hash
     end
 
     protected
+
+    # @return [Symbol]
+    #
+    # @api private
+    # @see http://archive.ubuntu.com/ubuntu/dists/trusty/Release
+    def host_arch
+      RbConfig::CONFIG.fetch('host_cpu').tap do |cpu|
+        return :amd64 if ['x86_64'].include?(cpu)
+
+        raise 'Add arch to match deb architectures (amd64 arm64 armhf i386 powerpc ppc64el)'
+      end
+    end
 
     # Get path for an user directory.
     #
