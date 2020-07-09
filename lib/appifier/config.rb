@@ -48,16 +48,12 @@ class Appifier::Config < Hash
 
     protected
 
-    # @return [Symbol]
+    # @return [String]
     #
     # @api private
     # @see http://archive.ubuntu.com/ubuntu/dists/trusty/Release
     def host_arch
-      RbConfig::CONFIG.fetch('host_cpu').tap do |cpu|
-        return :amd64 if ['x86_64'].include?(cpu)
-
-        raise 'Add arch to match deb architectures (amd64 arm64 armhf i386 powerpc ppc64el)'
-      end
+      RbConfig::CONFIG.fetch('host_cpu')
     end
 
     # Get path for an user directory.
