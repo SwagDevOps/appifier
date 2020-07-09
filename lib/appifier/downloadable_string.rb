@@ -32,6 +32,13 @@ class Appifier::DownloadableString < String
       false
     end
 
+    # Replacements to apply on content.
+    #
+    # @return [Hash{Regex|String => String}]
+    def replacements
+      {}
+    end
+
     protected
 
     autoload(:URI, 'uri')
@@ -48,7 +55,9 @@ class Appifier::DownloadableString < String
 
       warn("curl #{url}") if verbose
       URI.parse(url).yield_self do |uri|
-        uri.scheme == 'file' ? Pathname.new(uri.path).read : Net::HTTP.get(uri)
+        (uri.scheme == 'file' ? Pathname.new(uri.path).read : Net::HTTP.get(uri)).tap do |content|
+          replacements.each { |k, v| content.gsub!(k, v) }
+        end
       end
     end
   end
