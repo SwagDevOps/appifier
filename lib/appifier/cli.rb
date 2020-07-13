@@ -7,49 +7,45 @@ require_relative '../appifier'
 # Sample of use:
 #
 # ```ruby
-# Appifier::Cli.new(ARGV).call
+# Appifier::Cli.new.call
 # ```
-class Appifier::Cli
-  autoload(:YAML, 'yaml')
-
-  def initialize(argv = ARGV, builder_class: Appifier::Builder)
-    @argv = argv.dup.freeze
-    @builder_class = builder_class
-  end
-
-  # Execute build for all given arguments
-  #
-  # @return [Array<Pathname>]
-  def call
-    arguments.uniq.yield_self do |recipes|
-      recipes.map do |recipe|
-        builder_class.new(recipe, **options).prepare!.call
-      end.tap do |builds|
-        $stdout.puts(builds.join("\n"))
-      end
+class Appifier::Cli < Appifier::BaseCli
+  class << self
+    def commands # rubocop:disable Metrics/MethodLength:
+      # @formatter:off
+      {
+        build: {
+          desc: 'Build',
+          options: {
+            verbose: {
+              default: false,
+              type: :boolean,
+              desc: 'Verbose'
+            },
+            docker: {
+              default: true,
+              type: :boolean,
+              desc: 'Docker'
+            },
+            install: {
+              default: false,
+              type: :boolean,
+              desc: 'Install'
+            }
+          },
+          method: ->(recipe) { runner.build(recipe) }
+        }
+      }
+      # @formatter:on
     end
   end
 
-  # @return [Hash{Symbol => Object}]
-  def options
-    argv.dup.keep_if do |s|
-      s =~ /.+=.+/
-    end.map do |s|
-      s.split('=').yield_self { |res| [res[0], res[1..-1].join('=')] }
-    end.map do |k, v|
-      [k.to_sym, YAML.safe_load(v)]
-    end.to_h
+  # Runner providing methods.
+  class Runner < Appifier::BaseCli::Runner
+    def build(recipe)
+      Appifier::Builder.new(recipe, **options).prepare!.call.tap do |build|
+        $stdout.puts(build)
+      end
+    end
   end
-
-  # @return [Array<String>]
-  def arguments
-    argv.dup.reject { |s| s =~ /.+=.+/ }
-  end
-
-  attr_reader :argv
-
-  protected
-
-  # @return [Class]
-  attr_reader :builder_class
 end
