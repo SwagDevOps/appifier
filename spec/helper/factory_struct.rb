@@ -1,25 +1,22 @@
 # frozen_string_literal: true
 
-require 'ostruct'
+autoload(:OpenStruct, 'ostruct')
 
 # Generic struct (ala OpenStruct)
 class FactoryStruct < OpenStruct
-  # rubocop:disable Style/MissingRespondToMissing
+  # @param [Hash] input
+  def initialize(input)
+    # noinspection RubyArgCount
+    super(input).freeze
+  end
 
-  # Introduces some strictness on ``OpenStruct#method_missing``
-  #
   # @see https://apidock.com/ruby/OpenStruct/method_missing
   # @return [Object]
-  def method_missing(method, *args)
-    if method[-1] != '='
-      unless self.to_h.include?(method.to_sym)
-        message = "undefined method `#{method}' for #{self}"
-
-        raise NoMethodError, message, caller(1)
+  def method_missing(method, *args) # rubocop:disable Style/MissingRespondToMissing
+    -> { super }.tap do
+      unless self.to_h.transform_keys(&:to_sym).include?(method.to_s.gsub(/=$/, '').to_sym)
+        raise NoMethodError, "undefined method `#{method}' for #{self}", caller(1)
       end
-    end
-
-    super
+    end.call
   end
-  # rubocop:enable Style/MissingRespondToMissing
 end
