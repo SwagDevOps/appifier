@@ -13,10 +13,12 @@ module Appifier
   # @formatter:off
   {
     # components --------------------------------------------------
+    BaseCli: 'base_cli',
     Builder: 'builder',
     Cli: 'cli',
     Config: 'config',
     DownloadableString: 'downloadable_string',
+    PkgFunctions: 'pkg_functions',
     PkgScriptDocker: 'pkg_script_docker',
     PkgScript: 'pkg_script',
     Dockerfile: 'dockerfile',
