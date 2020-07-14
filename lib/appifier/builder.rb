@@ -16,11 +16,9 @@ class Appifier::Builder
 
   # @param [String] recipe
   # @param [Boolean] verbose
-  def initialize(recipe, verbose: false, docker: true, install: false, config: Appifier::Config.new, arch: RbConfig::CONFIG.fetch('host_cpu')) # rubocop:disable Layout/LineLength, Metrics/ParameterLists
+  def initialize(recipe, verbose: false, docker: true, install: false, config: Appifier::Config.new)
     @config = config
     @recipe = Appifier::Recipe.new(recipe, config: config).freeze
-    # noinspection RubyStringKeysInHashInspection
-    @env = { 'ARCH' => arch }
     # noinspection RubySimplifyBooleanInspection
     @verbose = !!verbose
     # noinspection RubySimplifyBooleanInspection
@@ -29,6 +27,20 @@ class Appifier::Builder
     # noinspection RubySimplifyBooleanInspection
     @installable = !!install
     @tmpdir = config.fetch('cache_dir')
+  end
+
+  # @return [Hash{String => String}]
+  def env
+    # @formatter:off
+    # noinspection RubyStringKeysInHashInspection
+    {
+      'ARCH' => config.fetch('build_arch'),
+      'LC_ALL' => 'C.UTF-8',
+      'LANG' => 'C.UTF-8',
+      'LANGUAGE' => 'C.UTF-8',
+      'FUNCTIONS_SH' => tmpdir.join('functions.sh'),
+    }.dup.transform_keys(&:freeze).transform_values { |v| v.to_s.freeze }
+    # @formatter:on
   end
 
   def verbose?
@@ -81,8 +93,8 @@ class Appifier::Builder
     # @formatter:off
     {
       # fist item is actual executable script
-      true => [Appifier::PkgScriptDocker, Appifier::Dockerfile, Appifier::PkgScript],
-      false => [Appifier::PkgScript]
+      true => [Appifier::PkgScriptDocker, Appifier::Dockerfile, Appifier::PkgScript, Appifier::PkgFunctions],
+      false => [Appifier::PkgScript, Appifier::PkgFunctions]
     }.fetch(docker?).yield_self do |files| # @formatter:on
       files.map { |klass| klass.new(verbose: verbose?) }
     end
@@ -104,7 +116,7 @@ class Appifier::Builder
 
     # rubocop:disable Layout/LineLength
     Appifier::Integration.new(build_dir.join('out'), recipe: recipe, config: config, verbose: verbose?, install: installable?).call
-    # rubocop:enable Layout/LineLength,
+    # rubocop:enable Layout/LineLength
   end
 
   protected
@@ -114,9 +126,6 @@ class Appifier::Builder
 
   # @return [Pathname]
   attr_reader :tmpdir
-
-  # @return [Hash{String => String}]
-  attr_reader :env
 
   # @return [Pathname]
   attr_reader :builder
