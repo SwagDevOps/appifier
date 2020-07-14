@@ -3,12 +3,13 @@
 FROM ubuntu:trusty
 
 ENV TZ=UTC \
-    LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    LANGUAGE=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive \
     DOCKER_BUILD=1 \
     WORKDIR=/workspace \
+    FUNCTIONS_SH=/workspace/functions.sh \
     ARCH=x86_64
 
 RUN set -eux ;\
@@ -16,7 +17,6 @@ RUN set -eux ;\
     sed -i 's/archive.ubuntu.com/ftp.fau.de/g' /etc/apt/sources.list ;\
     apt-get update ;\
     apt-get install -y \
-        language-pack-en-base \
         apt-transport-https libcurl3-gnutls libarchive13 wget curl \
         desktop-file-utils aria2 fuse gnupg2 build-essential file libglib2.0-bin \
         git jq unzip ;\
