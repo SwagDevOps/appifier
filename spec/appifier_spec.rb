@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-autoload(:Pathname, 'pathname')
-autoload(:Singleton, 'singleton')
-
 describe Appifier, :appifier do
   # @formatter:off
   [
