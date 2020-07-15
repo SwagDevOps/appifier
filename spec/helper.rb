@@ -8,6 +8,10 @@ if Gem::Specification.find_all_by_name('sys-proc').any?
   Sys::Proc.progname = 'rspec'
 end
 
+require_relative('helper/local').tap do
+  Object.class_eval { include Local }
+end
+
 # @formmatter:off
 [
   :constants,

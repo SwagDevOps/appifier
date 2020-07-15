@@ -1,20 +1,14 @@
 # frozen_string_literal: true
 
-autoload(:FactoryStruct, "#{__dir__}/factory_struct")
-autoload(:Sham, 'sham')
+autoload(:Shammable, "#{__dir__}/shammable")
 
 # Local (helper) methods
 module Local
   protected
 
-  # Retrieve ``sham`` by given ``name``
-  #
-  # @param [Symbol] name
-  def sham!(name)
-    FactoryStruct.sham!(name)
-  rescue NoMethodError
-    raise NameError, "no such sham - #{name}"
-  end
+  include(Shammable)
+
+  alias sham! sham
 
   # Silences any stream for the duration of the block.
   #
