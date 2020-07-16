@@ -9,6 +9,7 @@ source 'https://rubygems.org'
 git_source(:github) { |name| "https://github.com/#{name}.git" }
 
 group :default do
+  gem 'dry-container', '~> 0.4'
   gem 'iniparser', '~> 1.0'
   gem 'kamaze-version', '~> 1.0'
   gem 'liquid', '~> 4.0'

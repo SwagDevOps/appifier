@@ -17,6 +17,7 @@ module Appifier
     Builder: 'builder',
     Cli: 'cli',
     Config: 'config',
+    Container: 'container',
     DownloadableString: 'downloadable_string',
     PkgFunctions: 'pkg_functions',
     PkgScriptDocker: 'pkg_script_docker',
@@ -36,6 +37,15 @@ module Appifier
 
     if Gem::Specification.find_all_by_name('kamaze-project').any?
       require 'kamaze/project/core_ext/pp' if development?
+    end
+  end
+
+  class << self
+    # Get container (inversion of control), almost a service locator.
+    #
+    # @return [Appifier::Container]
+    def container
+      Appifier::Container.instance
     end
   end
 end
