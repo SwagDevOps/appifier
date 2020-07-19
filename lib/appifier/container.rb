@@ -24,12 +24,37 @@ class Appifier::Container < Dry::Container
     end
   end
 
+  # Register an item with the container to be resolved later.
+  #
+  # @param [Mixed] key
+  #   The key to register the container item with (used to resolve)
+  # @param [Mixed] contents
+  #   The item to register with the container (if no block given)
+  # @param [Hash] options
+  #   Options to pass to the registry when registering the item
+  # @yield
+  #   If a block is given, contents will be ignored and the block
+  #   will be registered instead
+  #
+  # @return [Dry::Container::Mixin] self
+  def register(key, contents = nil, options = {}, &block)
+    -> { super }.tap do
+      if self.key?(key) # avoid `Dry::Container::Error` merging
+        Dry::Container.new.register(key, contents, options, &block).tap do |container|
+          return self.merge(container)
+        end
+      end
+    end.call
+  end
+
   # @return [Dry::Container::Mixin] self
   def []=(key, value)
     (value.respond_to?(:memoized?) and value.public_send(:memoized?)).yield_self do |memoized|
       self.register(key.to_s.freeze, value, { memoize: memoized, call: value.is_a?(::Proc) })
     end
   end
+
+  alias has? key?
 
   class << self
     protected
