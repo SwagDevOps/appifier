@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 require_relative '../appifier'
+autoload(:Thor, 'thor')
 
 # @abstract
 class Appifier::BaseCli
-  autoload(:Thor, 'thor')
-
   class << self
     # @abstract
     #
@@ -13,9 +12,14 @@ class Appifier::BaseCli
     def commands
       {}
     end
-  end
 
-  def initialize # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    # @!method runner
+    #   @return [Appifier::BaseCli::Runner]
+  end
+  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+
+  # A new instance of BaseCli.
+  def initialize
     { instance: self, commands: commands }.tap do |params|
       @core = Class.new(Thor) do
         params.fetch(:commands).each do |command_name, command|
@@ -29,6 +33,7 @@ class Appifier::BaseCli
       end
     end
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
   # @param [Array<String>] given_args
   # @param [Hash] config
@@ -70,6 +75,10 @@ class Appifier::BaseCli
     # @param [Hash{String => Object}] options
     def initialize(options = {})
       @options = options.dup.transform_keys(&:to_sym).freeze
+    end
+
+    def call(method, *args)
+      self.public_send(method, *args)
     end
   end
 end
