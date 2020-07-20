@@ -28,11 +28,31 @@ class Appifier::PkgScript < Appifier::DownloadableString
     #
     # @return [Symbol]
     def apt_arch
-      Appifier::Config.new.fetch('build_arch').yield_self do |s|
-        return :amd64 if ['x86_64'].include?(s)
-
-        raise 'Add arch to match deb architectures (amd64 arm64 armhf i386 powerpc ppc64el)'
+      Appifier.container[:config].fetch('build_arch').yield_self do |s|
+        arch_transformer(s).yield_self { |f| ensure_arch!(f.call) }
       end
+    end
+
+    # @api private
+    #
+    # @return [Proc]
+    def arch_transformer(arch)
+      lambda do
+        arch.tap do
+          return :amd64 if ['x86_64'].include?(arch)
+        end
+      end
+    end
+
+    # @api private
+    #
+    # @return [Symbol]
+    def ensure_arch!(arch)
+      arch.tap do
+        %w[amd64 arm64 armhf i386 powerpc ppc64el].tap do |archs|
+          raise "Unsupported deb architecture #{s.to_s.inspect}" unless archs.include?(arch.to_s)
+        end
+      end.to_sym
     end
   end
 end
