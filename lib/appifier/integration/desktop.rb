@@ -25,8 +25,9 @@ class Appifier::Integration::Desktop < Pathname
     to_h.fetch(*args, &block)
   end
 
+  # @return [String]
   def filename
-    self.basename('.desktop')
+    self.basename('.desktop').to_s.freeze
   end
 
   alias to_h parse
