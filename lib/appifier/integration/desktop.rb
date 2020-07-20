@@ -33,12 +33,13 @@ class Appifier::Integration::Desktop < Pathname
 
   # Alter original content with given values.
   #
+  # @param [Hash] merged
   # @return [String]
   def alter(merged)
     [].tap do |lines|
       self.class.merge(self.to_h, merged.to_h).each do |section_title, section|
         lines << "[#{section_title}]"
-        section.each { |k, v| lines << "#{k}=#{self.template(v)}" }
+        section.each { |k, v| lines << "#{k}=#{template.call(v, variables)}" }
       end
     end.compact.join("\n")
   end
@@ -61,12 +62,8 @@ class Appifier::Integration::Desktop < Pathname
 
   protected
 
-  # @param [String] str
+  # @return [Proc]
   #
-  # @return [String]
-  #
-  # @raise [Liquid::Error]
-  def template(str)
-    @template.call(str, variables)
-  end
+  # @see Appifier::Container
+  attr_reader :template
 end
