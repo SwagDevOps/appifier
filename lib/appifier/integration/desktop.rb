@@ -1,21 +1,19 @@
 # frozen_string_literal: true
 
 require_relative '../integration'
-
 autoload(:Pathname, 'pathname')
+autoload(:IniParser, 'iniparser')
 
 # Describe a desktop file.
 class Appifier::Integration::Desktop < Pathname
-  autoload(:IniParser, 'iniparser')
-  autoload(:Liquid, 'liquid')
-
   # @return [Hash{String => String}]
   attr_reader :variables
 
-  def initialize(path, variables = {})
+  def initialize(path, variables: {}, template: Appifier.container[:template])
     super(path)
 
     @variables = variables.dup.freeze
+    @template = template
   end
 
   # @return [Hash]
@@ -67,14 +65,8 @@ class Appifier::Integration::Desktop < Pathname
   #
   # @return [String]
   #
-  # @see https://github.com/Shopify/liquid/blob/70c45f8cd84c753298dd47488b85169458692875/README.md
-  #
   # @raise [Liquid::Error]
   def template(str)
-    Liquid::Template.parse(str, { error_mode: :strict }).yield_self do |template|
-      template.render(variables, { strict_variables: true }).tap do
-        raise template.errors.first unless template.errors.empty?
-      end
-    end
+    @template.call(str, variables)
   end
 end
