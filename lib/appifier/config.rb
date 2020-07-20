@@ -41,7 +41,7 @@ class Appifier::Config < Hash
         defaults[:recipes_path] = [
           defaults.fetch(:config_dir).join('recipes'), # user defined recipes
           Pathname.new(__dir__).realpath.join('recipes'),
-        ].map(&:to_s).freeze
+        ].map(&:freeze)
       end.transform_keys { |k| k.to_s.freeze }
       # @formatter:on
     end
