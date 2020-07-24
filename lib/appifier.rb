@@ -25,6 +25,7 @@ module Appifier
     Dockerfile: 'dockerfile',
     Recipe: 'recipe',
     Integration: 'integration',
+    JsonPrinter: 'json_printer',
     Mixins: 'mixins',
     Shell: 'shell',
     # system ------------------------------------------------------
