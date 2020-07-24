@@ -1,21 +1,19 @@
 # frozen_string_literal: true
 
 require_relative '../integration'
+autoload(:FileUtils, 'fileutils')
+autoload(:Pathname, 'pathname')
+autoload(:SecureRandom, 'securerandom')
 
 # Describe an install, from a given source to a given directory (target).
 class Appifier::Integration::Install
-  autoload(:FileUtils, 'fileutils')
-  autoload(:Pathname, 'pathname')
-  autoload(:SecureRandom, 'securerandom')
   autoload(:DesktopBuilder, "#{__dir__}/install/desktop_builder")
 
-  include(Appifier::Shell)
+  include(Appifier::Mixins::Shell)
+  include(Appifier::Mixins::Fs)
 
-  def initialize(source, target, parameters:, config: Appifier::Config.new, verbose: false)
+  def initialize(source, target, parameters:, config: Appifier.container[:config])
     @parameters = parameters.to_h.freeze
-    # noinspection RubySimplifyBooleanInspection
-    @verbose = !!verbose
-    @fs = verbose ? FileUtils::Verbose : FileUtils
     @source = Pathname.new(source).realpath.freeze
     @target = Pathname.new(target).freeze
     @config = config
@@ -26,7 +24,7 @@ class Appifier::Integration::Install
   #
   # @return [Extraction]
   def extraction
-    @extraction ||= Appifier::Integration::Extraction.new(source, verbose: verbose?)
+    @extraction ||= Appifier::Integration::Extraction.new(source)
   end
 
   def call
@@ -47,8 +45,6 @@ class Appifier::Integration::Install
 
   # @return [Hash]
   attr_reader :parameters
-
-  attr_reader :fs
 
   # AppImage source.
   #

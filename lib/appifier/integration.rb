@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
 require_relative '../appifier'
+autoload(:Pathname, 'pathname')
+autoload(:YAML, 'yaml')
 
 # Integration
 class Appifier::Integration
-  autoload(:Pathname, 'pathname')
-  autoload(:YAML, 'yaml')
-
   # @formatter:off
   {
     Desktop: 'desktop',
@@ -21,20 +20,14 @@ class Appifier::Integration
   # @return [Hash{String => Object}]
   attr_reader :parameters
 
-  def initialize(out_dir, recipe:, config: Appifier::Config.new, verbose: false, install: false)
+  def initialize(out_dir, recipe:, install: false, config: Appifier.container[:config])
     self.tap do
       @out_dir = Pathname.new(out_dir).freeze
       @config = config
       # noinspection RubySimplifyBooleanInspection
-      @verbose = !!verbose
-      # noinspection RubySimplifyBooleanInspection
       @installable = !!install
       @parameters = parameterize(recipe).freeze
     end.freeze
-  end
-
-  def verbose?
-    @verbose
   end
 
   def name
@@ -70,7 +63,7 @@ class Appifier::Integration
   def call
     builds.values.last.tap do |build|
       config.fetch('applications_dir').join(name).tap do |app_dir|
-        Install.new(build, app_dir, config: config, parameters: parameters, verbose: verbose?).tap do |install|
+        Install.new(build, app_dir, parameters: parameters).tap do |install|
           install.call if installable?
         end
       end

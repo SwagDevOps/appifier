@@ -1,29 +1,26 @@
 # frozen_string_literal: true
 
 require_relative '../appifier'
+autoload(:Pathname, 'pathname')
+autoload(:FileUtils, 'fileutils')
+autoload(:Etc, 'etc')
+autoload(:Open3, 'open3')
 
 # Builder
 class Appifier::Builder
-  autoload(:Pathname, 'pathname')
-  autoload(:FileUtils, 'fileutils')
-  autoload(:Etc, 'etc')
-  autoload(:Open3, 'open3')
+  include(Appifier::Mixins::Shell)
+  include(Appifier::Mixins::Fs)
+  include(Appifier::Mixins::Verbose)
 
   # @return [Appifier::Recipe]
   attr_reader :recipe
 
-  include(Appifier::Shell)
-
   # @param [String] recipe
-  # @param [Boolean] verbose
-  def initialize(recipe, verbose: false, docker: true, install: false, config: Appifier::Config.new)
+  def initialize(recipe, docker: true, install: false, config: Appifier.container[:config])
     @config = config
     @recipe = Appifier::Recipe.new(recipe, config: config).freeze
     # noinspection RubySimplifyBooleanInspection
-    @verbose = !!verbose
-    # noinspection RubySimplifyBooleanInspection
     @docker = !!docker
-    @fs = verbose ? FileUtils::Verbose : FileUtils
     # noinspection RubySimplifyBooleanInspection
     @installable = !!install
     @tmpdir = config.fetch('cache_dir')
@@ -41,10 +38,6 @@ class Appifier::Builder
       'FUNCTIONS_SH' => tmpdir.join('functions.sh'),
     }.dup.transform_keys(&:freeze).transform_values { |v| v.to_s.freeze }
     # @formatter:on
-  end
-
-  def verbose?
-    @verbose
   end
 
   # Denote build will be run in a docker context.
@@ -115,24 +108,19 @@ class Appifier::Builder
   def call
     build(downloadables)
 
-    # rubocop:disable Layout/LineLength
-    Appifier::Integration.new(build_dir.join('out'), recipe: recipe, config: config, verbose: verbose?, install: installable?).call
-    # rubocop:enable Layout/LineLength
+    Appifier::Integration.new(build_dir.join('out'), recipe: recipe, install: installable?).call
   end
 
   protected
 
-  # @return [FileUtils]
-  attr_accessor :fs
+  # @return [Appifier::Config]
+  attr_reader :config
 
   # @return [Pathname]
   attr_reader :tmpdir
 
   # @return [Pathname]
   attr_reader :builder
-
-  # @return [Appifier::Config]
-  attr_reader :config
 
   # @raise [ArgumentError]
   def recipe=(recipe)

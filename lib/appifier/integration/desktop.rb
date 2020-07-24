@@ -9,7 +9,7 @@ class Appifier::Integration::Desktop < Pathname
   # @return [Hash{String => String}]
   attr_reader :variables
 
-  def initialize(path, variables: {}, template: Appifier.container[:template])
+  def initialize(path, variables = {}, template: Appifier.container[:template])
     super(path)
 
     @variables = variables.dup.freeze

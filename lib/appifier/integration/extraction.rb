@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
 require_relative '../integration'
-
 autoload(:Pathname, 'pathname')
+autoload(:SecureRandom, 'securerandom')
 
 # Describe an extraction from a given AppImage file (source).
 #
 # Extraction MUST contain a valid desktop file and an icon.
 class Appifier::Integration::Extraction < Pathname
-  include(Appifier::Shell)
+  include(Appifier::Mixins::Shell)
+  include(Appifier::Mixins::Verbose)
 
   # @return [Pathname]
   attr_reader :source
@@ -16,17 +17,11 @@ class Appifier::Integration::Extraction < Pathname
   # @return [Array<String>]
   attr_reader :extractables
 
-  def initialize(source, verbose: false)
-    # noinspection RubySimplifyBooleanInspection
-    @verbose = !!verbose
+  def initialize(source)
     @source = Pathname.new(source).realpath.freeze
     @extractables = %w[*.desktop .DirIcon *.svg *.png].map(&:freeze).freeze
 
     self.class.__send__(:mkdir, verbose: verbose?).tap { |tmpdir| super(tmpdir).freeze }
-  end
-
-  def verbose?
-    @verbose
   end
 
   # Extracted (unless done) and execute given block.
@@ -78,8 +73,6 @@ class Appifier::Integration::Extraction < Pathname
   end
 
   class << self
-    autoload(:SecureRandom, 'securerandom')
-
     protected
 
     # @api private

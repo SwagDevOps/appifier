@@ -25,6 +25,7 @@ module Appifier
     Dockerfile: 'dockerfile',
     Recipe: 'recipe',
     Integration: 'integration',
+    Mixins: 'mixins',
     Shell: 'shell',
     # system ------------------------------------------------------
     Bundled: 'bundled',

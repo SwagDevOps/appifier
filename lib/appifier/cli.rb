@@ -33,19 +33,12 @@ class Appifier::Cli < Appifier::BaseCli
               desc: 'Install'
             }
           },
-          method: ->(recipe) { runner.build(recipe) }
+          method: ->(recipe) { runner.call(:build, recipe) }
         }
       }
       # @formatter:on
     end
   end
-
-  # Runner providing methods.
-  class Runner < Appifier::BaseCli::Runner
-    def build(recipe)
-      Appifier::Builder.new(recipe, **options).prepare!.call.tap do |build|
-        $stdout.puts(build)
-      end
-    end
-  end
 end
+
+require_relative 'cli/runner'

@@ -9,7 +9,10 @@
 
     self[:verbose] ? FileUtils::Verbose : FileUtils
   end,
+  shell: -> { Appifier::Shell.new(verbose: self[:verbose]) },
   template: lambda do
+    # @return [String]
+    # @raise [Liquid::Error]
     # @see https://github.com/Shopify/liquid/blob/70c45f8cd84c753298dd47488b85169458692875/README.md
     lambda do |str, variables = {}|
       autoload(:Liquid, 'liquid')

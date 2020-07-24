@@ -71,13 +71,20 @@ class Appifier::DownloadableString < String
     @verbose
   end
 
+  # Denote resulting file is supposed to be executable.
+  #
+  # @return [Boolean]
   def executable?
     self.class.executable?
   end
 
+  def to_path
+    Pathname.new(Dir.pwd).join(Pathname.new(self.url).basename.to_s).to_s
+  end
+
   # @return [Pathname]
   def call
-    Pathname.new(Dir.pwd).join(Pathname.new(self.url).basename.to_s).tap do |f|
+    Pathname.new(to_path).tap do |f|
       f.write(self.to_s)
     end.tap do |f|
       fs.chmod(0o755, f) if executable?
