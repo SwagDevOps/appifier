@@ -9,6 +9,7 @@
 
     self[:verbose] ? FileUtils::Verbose : FileUtils
   end,
+  printer: -> { Appifier::JsonPrinter.new },
   shell: -> { Appifier::Shell.new(verbose: self[:verbose]) },
   template: lambda do
     # @return [String]
