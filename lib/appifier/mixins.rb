@@ -7,6 +7,7 @@ module Appifier::Mixins
   # @formatter:off
   {
     Fs: 'fs',
+    Printer: 'printer',
     Shell: 'shell',
     Verbose: 'verbose',
   }.each { |s, fp| autoload(s, "#{__dir__}/mixins/#{fp}") }
