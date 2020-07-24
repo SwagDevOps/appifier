@@ -44,4 +44,9 @@ script:
 integration:
   name: Caprine
   executable: caprine
-  exec_params: ['%U']
+  desktop:
+    name: caprine
+    override:
+      'Desktop Entry':
+        Exec: '{{executable.path}} %U'
+        Icon: '{{icon.path}}'
