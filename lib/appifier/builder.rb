@@ -26,6 +26,13 @@ class Appifier::Builder
     @tmpdir = config.fetch('cache_dir')
   end
 
+  # @return [Array<Pathname>]
+  def call
+    build(downloadables)
+
+    Appifier::Integration.new(build_dir.join('out'), recipe: recipe, install: installable?).call
+  end
+
   # @return [Hash{String => String}]
   def env
     # @formatter:off
@@ -102,13 +109,6 @@ class Appifier::Builder
   # * ``pkg2appimage``
   def target
     (docker? ? recipe : recipe.realpath).to_s
-  end
-
-  # @return [Array<Pathname>]
-  def call
-    build(downloadables)
-
-    Appifier::Integration.new(build_dir.join('out'), recipe: recipe, install: installable?).call
   end
 
   protected
