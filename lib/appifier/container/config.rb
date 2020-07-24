@@ -3,6 +3,11 @@
 # @formatter:off
 {
   config: -> { Appifier::Config.new },
+  builds_lister: lambda do
+    self[:config].fetch('cache_dir').join('out').yield_self do |builds_dir|
+      Appifier::BuildsLister.new(builds_dir)
+    end
+  end,
   verbose: false,
   fs: lambda do
     autoload(:FileUtils, 'fileutils')
