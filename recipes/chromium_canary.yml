@@ -6,42 +6,60 @@ lowerapp: chromium-browser
 arch: x86_64
 
 ingredients:
-  packages:
-    - chromium-browser
+  dist: trusty
+  sources:
+    - deb http://archive.ubuntu.com/ubuntu/ trusty main universe
+  packages: []
   script:
     - set -eu
+    # cleanup --------------------------------------------------------
+    - rm -rf VERSION *.zip *.png *.svg *.sh *.deb
     # variables ------------------------------------------------------
     - LOWERAPP=chromium-browser
+    - ICON_URL='https://upload.wikimedia.org/wikipedia/commons/5/5f/Chromium_11_Logo.svg'
     - REVISION=$(curl -sS 'https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2FLAST_CHANGE?alt=media')
     - DLD="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F${REVISION}%2Fchrome-linux.zip?alt=media"
     # output files ---------------------------------------------------
-    - echo "${REVISION}" > VERSION
-    - rm -f *.zip
-    - rm -rf chrome-linux/
-    - curl "$DLD" -o "chromium-${REVISION}.zip"
-    - unzip -oq "chromium-${REVISION}.zip"
-    - rm -f *.zip
-    - cp -fp chrome-linux/product_logo_48.png "${LOWERAPP}.png"
+    - wget --trust-server-names -c "${ICON_URL}" -O "${LOWERAPP}.svg"
+    - wget --trust-server-names -c "$DLD" -O "${REVISION}.zip"
+    - unzip -oq "${REVISION}.zip"
+    - echo "$(date +'%Y.%m.%d').${REVISION}" > VERSION
 
 script:
   - set -eu
+  - # variables -----------------------------------------------------
   - LOWERAPP=chromium-browser
-  - cp "../${LOWERAPP}.png" .
+  - # desktop -------------------------------------------------------
   - cat > "${LOWERAPP}.desktop" << EOF
   - [Desktop Entry]
   - Version=1.0
   - Name=Chromium Canary
   - Comment=Browse the World Wide Web
   - GenericName=Web Browser
-  - Exec=chromium-browser %u
+  - Exec=${LOWERAPP} %u
   - Terminal=false
   - X-MultipleArgs=false
   - Type=Application
-  - Icon=chromium-browser
+  - Icon=${LOWERAPP}
+  - StartupWMClass=chromium-browser
   - Categories=Network;WebBrowser;
   - MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
   - EOF
+  # files ---------------------------------------------------------
+  - cp "../${LOWERAPP}.svg" .
   - mkdir -p usr/share/applications
   - cp "${LOWERAPP}.desktop" usr/share/applications
-  - cp -rfv ../chrome-linux usr/share/chrome-linux/
-  - (cd usr && ln -sfvr share/chrome-linux/chrome bin/chromium-browser)
+  - mkdir -p "usr/share/${LOWERAPP}/"
+  - cp -rfv ../chrome-linux/* "usr/share/${LOWERAPP}/"
+  - rm -rfv xdg-mime xdg-settings chrome-wrapper
+  - ln -sfvr "usr/share/${LOWERAPP}/chrome" "usr/bin/${LOWERAPP}"
+
+integration:
+  name: Chromium_Canary
+  executable: chromium-browser
+  desktop:
+    name: chromium-browser
+    override:
+      'Desktop Entry':
+        Exec: '{{executable.path}} %u'
+        Icon: '{{icon.path}}'
