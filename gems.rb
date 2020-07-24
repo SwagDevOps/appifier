@@ -13,6 +13,7 @@ group :default do
   gem 'iniparser', '~> 1.0'
   gem 'kamaze-version', '~> 1.0'
   gem 'liquid', '~> 4.0'
+  gem 'rouge', '~> 3.21'
   gem 'thor', '~> 1.0'
 end
 
