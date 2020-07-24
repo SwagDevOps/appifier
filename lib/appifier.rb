@@ -15,6 +15,7 @@ module Appifier
     # components --------------------------------------------------
     BaseCli: 'base_cli',
     Builder: 'builder',
+    BuildsLister: 'builds_lister',
     Cli: 'cli',
     Config: 'config',
     Container: 'container',
