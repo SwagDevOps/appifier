@@ -7,6 +7,8 @@ autoload(:Pathname, 'pathname')
 #
 # Builds are indexed by name and sorted by mtime.
 class Appifier::BuildsLister
+  autoload(:Build, "#{__dir__}/builds_lister/build")
+
   def initialize(path)
     @path = Pathname.new(path).freeze
   end
@@ -17,34 +19,6 @@ class Appifier::BuildsLister
       scan.each do |item|
         h[item.name] = h[item.name].to_a.concat([item])
       end
-    end
-  end
-
-  # Describe a build.
-  class Build
-    # @return [String]
-    attr_reader :name
-
-    # @return [String]
-    attr_reader :version
-
-    # @return [Time]
-    attr_reader :mtime
-
-    # @return [Pathname]
-    attr_reader :path
-
-    def initialize(name, version, path)
-      self.tap do
-        @name = name
-        @version = version
-        @path = Pathname.new(path).freeze
-        @mtime = File.mtime(self.path)
-      end.freeze
-    end
-
-    def to_path
-      path.to_path
     end
   end
 
