@@ -8,8 +8,8 @@ autoload(:Open3, 'open3')
 
 # Builder
 class Appifier::Builder
-  include(Appifier::Mixins::Shell)
   include(Appifier::Mixins::Fs)
+  include(Appifier::Mixins::Shell)
   include(Appifier::Mixins::Verbose)
 
   # @return [Appifier::Recipe]
@@ -104,7 +104,7 @@ class Appifier::Builder
     (docker? ? recipe : recipe.realpath).to_s
   end
 
-  # @return [Pathname]
+  # @return [Array<Pathname>]
   def call
     build(downloadables)
 
