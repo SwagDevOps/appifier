@@ -4,6 +4,8 @@ require_relative '../cli'
 
 # Runner
 class Appifier::Cli::Runner < Appifier::BaseCli::Runner
+  include(Appifier::Mixins::Printer)
+
   def initialize(options = {}, container: Appifier.container)
     self.container = container
 
@@ -14,9 +16,7 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
   end
 
   def build(recipe)
-    Appifier::Builder.new(recipe, **options).prepare!.call.tap do |build|
-      $stdout.puts(build)
-    end
+    Appifier::Builder.new(recipe, **options).prepare!.call.tap { |build| printer.call(build) }
   end
 
   protected
