@@ -7,6 +7,7 @@ module Appifier::Mixins
   # @formatter:off
   {
     Fs: 'fs',
+    Inject: 'inject',
     Printer: 'printer',
     Shell: 'shell',
     Verbose: 'verbose',
