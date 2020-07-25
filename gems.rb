@@ -14,6 +14,7 @@ group :default do
   gem 'kamaze-version', '~> 1.0'
   gem 'liquid', '~> 4.0'
   gem 'rouge', '~> 3.21'
+  gem 'sys-proc', '~> 1.1'
   gem 'thor', '~> 1.0'
 end
 
@@ -25,7 +26,6 @@ group :development do
   gem 'rake', '~> 13.0'
   gem 'rubocop', '~> 0.79'
   gem 'rugged', '~> 1.0'
-  gem 'sys-proc', '~> 1.1'
 end
 
 group :watch do
