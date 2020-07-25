@@ -29,4 +29,10 @@ class Appifier::BuildsLister::Build
   def to_path
     path.to_path
   end
+
+  alias to_s to_path
+
+  def to_json(*_)
+    to_path.inspect
+  end
 end
