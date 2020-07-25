@@ -9,10 +9,13 @@ autoload(:Pathname, 'pathname')
 class Appifier::BuildsLister
   autoload(:Build, "#{__dir__}/builds_lister/build")
 
+  # @param [String] path
   def initialize(path)
     @path = Pathname.new(path).freeze
   end
 
+  # Get builds indexed by name and sorted by mtime.
+  #
   # @return [Hash{String => Array<Build>}]
   def call
     {}.tap do |h|
@@ -20,6 +23,10 @@ class Appifier::BuildsLister
         h[item.name] = h[item.name].to_a.concat([item])
       end
     end
+  end
+
+  def fetch(*args, &block)
+    call.fetch(*args, &block)
   end
 
   protected
