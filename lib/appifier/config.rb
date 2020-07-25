@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require_relative '../appifier'
+autoload(:Etc, 'etc')
+autoload(:Pathname, 'pathname')
+autoload(:YAML, 'yaml')
 
 # Config from environment variables.
 class Appifier::Config < Hash
@@ -22,10 +25,6 @@ class Appifier::Config < Hash
   end
 
   class << self
-    autoload(:Etc, 'etc')
-    autoload(:Pathname, 'pathname')
-    autoload(:YAML, 'yaml')
-
     # @return [Hash{String => Object}]
     def defaults # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       # @formatter:off
