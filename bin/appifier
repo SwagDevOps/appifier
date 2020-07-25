@@ -3,4 +3,8 @@
 
 require_relative '../lib/appifier'
 
-Appifier::Cli.new.call
+if __FILE__ == $PROGRAM_NAME
+  require('sys/proc').tap { Sys::Proc.progname = nil }
+
+  Appifier::Cli.new.call
+end
