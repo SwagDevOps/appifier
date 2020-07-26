@@ -16,7 +16,7 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
   end
 
   def build(recipe)
-    Appifier::Builder.new(recipe, **options).prepare!.call.tap { |build| printer.call(build) }
+    Appifier::Builder.new(recipe, **options).call.tap { |build| printer.call(build) }
   end
 
   protected

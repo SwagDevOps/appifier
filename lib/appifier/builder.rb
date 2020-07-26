@@ -21,7 +21,13 @@ class Appifier::Builder
   # @option kwargs [Boolean] :docker
   # @option kwargs [Boolean] :install
   def initialize(recipe, docker: true, install: false, **kwargs)
-    inject(config: kwargs[:config], lister: [kwargs[:lister], :builds_lister]).assert { !values.include?(nil) }
+    # @formatter:off
+    {
+      config: kwargs[:config],
+      lister: [kwargs[:lister], :builds_lister],
+      logged_runner: kwargs[:logged_runner],
+    }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
+    # @formatter:on
 
     @recipe = Appifier::Recipe.new(recipe, config: self.config).freeze
     # noinspection RubySimplifyBooleanInspection
@@ -42,20 +48,6 @@ class Appifier::Builder
     end
   end
 
-  # @return [Hash{String => String}]
-  def env
-    # @formatter:off
-    # noinspection RubyStringKeysInHashInspection
-    {
-      'ARCH' => config.fetch('build_arch'),
-      'LC_ALL' => 'C.UTF-8',
-      'LANG' => 'C.UTF-8',
-      'LANGUAGE' => 'C.UTF-8',
-      'FUNCTIONS_SH' => tmpdir.join('functions.sh'),
-    }.dup.transform_keys(&:freeze).transform_values { |v| v.to_s.freeze }
-    # @formatter:on
-  end
-
   # Denote build will be run in a docker context.
   #
   # @return [Boolean]
@@ -68,23 +60,6 @@ class Appifier::Builder
   # @return [Boolean]
   def installable?
     @installable
-  end
-
-  # @return [Hash{Symbol => Pathname}]
-  def logs
-    { out: 'out.log', err: 'err.log' }.map { |k, v| [k.to_sym, build_dir.join('logs', recipe.to_s, v)] }.to_h
-  end
-
-  def prepare!
-    self.tap do
-      build_dir { true }
-      logs.each_value do |fp|
-        if fp.is_a?(Pathname)
-          fp.dirname.tap { |dir| fs.mkdir_p(dir) unless dir.exist? }
-          fs.touch(fp)
-        end
-      end
-    end
   end
 
   # @return [Pathname|Object]
@@ -134,6 +109,9 @@ class Appifier::Builder
   # @return [Appifier::BuildsLister]
   attr_reader :lister
 
+  # @return [Appifier::LoggedRunner]
+  attr_reader :logged_runner
+
   # @raise [ArgumentError]
   def recipe=(recipe)
     @recipe = recipe.to_sym
@@ -156,9 +134,7 @@ class Appifier::Builder
         fs.cp(recipe.file.to_s, f)
       end
 
-      self.logs.transform_values { |v| File.open(v, 'w') }.tap do |options|
-        sh(env, scripts.map(&:call).fetch(0).to_s, target, options)
-      end
+      logged_runner.call(scripts.map(&:call).fetch(0).to_s, target, name: recipe.to_s)
     end
   end
 end
