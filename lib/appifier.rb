@@ -27,6 +27,7 @@ module Appifier
     Recipe: 'recipe',
     Integration: 'integration',
     JsonPrinter: 'json_printer',
+    LoggedRunner: 'logged_runner',
     Mixins: 'mixins',
     Shell: 'shell',
     # system ------------------------------------------------------
