@@ -106,7 +106,7 @@ class Appifier::Builder
       false => [Appifier::PkgScript, Appifier::PkgFunctions]
     }.fetch(docker?).yield_self do |files| # @formatter:on
       # @type [Class<Appifier::DownloadableString>] klass
-      files.map { |klass| klass.new(verbose: verbose?) }
+      files.map(&:new)
     end
   end
 

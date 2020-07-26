@@ -1,19 +1,17 @@
 # frozen_string_literal: true
 
 require_relative '../appifier'
+autoload(:URI, 'uri')
+autoload(:Pathname, 'pathname')
 
 # Describe a dowloadable text file.
 #
 # @abstract
 class Appifier::DownloadableString < String
-  autoload(:Pathname, 'pathname')
-  autoload(:FileUtils, 'fileutils')
+  include(Appifier::Mixins::Fs)
+  include(Appifier::Mixins::Verbose)
 
-  def initialize(verbose: false)
-    # noinspection RubySimplifyBooleanInspection
-    @verbose = !!verbose
-
-    self.fs = (verbose? ? FileUtils::Verbose : FileUtils)
+  def initialize
     self.class.__send__(:fetch, self.url, verbose: verbose?).tap { |s| super(s) }
   end
 
@@ -41,8 +39,6 @@ class Appifier::DownloadableString < String
 
     protected
 
-    autoload(:URI, 'uri')
-
     # Fetch given url to string.
     #
     # @api private
@@ -67,10 +63,6 @@ class Appifier::DownloadableString < String
     self.class.url
   end
 
-  def verbose?
-    @verbose
-  end
-
   # Denote resulting file is supposed to be executable.
   #
   # @return [Boolean]
@@ -90,8 +82,4 @@ class Appifier::DownloadableString < String
       fs.chmod(0o755, f) if executable?
     end
   end
-
-  protected
-
-  attr_accessor :fs
 end

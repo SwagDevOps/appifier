@@ -14,7 +14,7 @@ describe Appifier::DownloadableString, :'appifier/downloadable_string' do # rubo
   # @type [Class<Appifier::DownloadableString>] fake_class
   sham(:downloadable_strings).builder.tap do |builder|
     let(:fake_class) { builder.call }
-    let(:subject) { fake_class.new(verbose: false) }
+    let(:subject) { fake_class.new }
   end
 
   it { expect(subject).to respond_to(:call).with(0).arguments }
