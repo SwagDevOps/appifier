@@ -17,3 +17,13 @@ ingredients:
     # output files ---------------------------------------------------
     - echo "${VERSION}" > VERSION
     - wget --trust-server-names -c "$DLD" -O "mailspring-${VERSION}.deb"
+
+integration:
+  name: Mailspring
+  executable: mailspring
+  desktop:
+    name: mailspring
+    override:
+      'Desktop Entry':
+        Exec: '{{executable.path}} %U'
+        Icon: '{{icon.path}}'
