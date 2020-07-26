@@ -15,17 +15,23 @@ class Appifier::Integration
   }.each { |s, fp| autoload(s, "#{__dir__}/integration/#{fp}") }
   # @formatter:on
 
+  include(Appifier::Mixins::Inject)
+
   # Read from YAML recipe integration section + users configuration.
   #
   # @return [Hash{String => Object}]
   attr_reader :parameters
 
-  def initialize(out_dir, recipe:, install: false, config: Appifier.container[:config])
+  # Install given build.
+  #
+  # @param [String] build path to a build result file (an *.AppImage file)
+  #
+  # @option kwargs [Appifier::Recipe] :recipe
+  def initialize(build, recipe:, **kwargs)
+    inject(config: kwargs[:config]).assert { !values.include?(nil) }
+
     self.tap do
-      @out_dir = Pathname.new(out_dir).freeze
-      @config = config
-      # noinspection RubySimplifyBooleanInspection
-      @installable = !!install
+      @build = Pathname.new(build).freeze
       @parameters = parameterize(recipe).freeze
     end.freeze
   end
@@ -51,36 +57,25 @@ class Appifier::Integration
     {}
   end
 
-  def installable?
-    @installable
-  end
-
   def fetch(*args, &block)
     parameters.fetch(*args, &block)
   end
 
   # return [Pathname]
   def call
-    builds.values.last.tap do |build|
+    build.tap do
       config.fetch('applications_dir').join(name).tap do |app_dir|
-        Install.new(build, app_dir, parameters: parameters).tap do |install|
-          install.call if installable?
+        Install.new(build, app_dir, parameters: parameters).tap do |install| # rubocop:disable Style/SymbolProc
+          install.call # @todo returns file created during install
         end
       end
     end
   end
 
-  # Get matching builds sorted by mtime.
-  #
-  # @return [Hash<String => Pathname>]
-  def builds
-    BuildsList.new(out_dir, name).freeze
-  end
-
   protected
 
   # @return [Pathname]
-  attr_reader :out_dir
+  attr_reader :build
 
   # @return [Appifier::Config]
   attr_reader :config

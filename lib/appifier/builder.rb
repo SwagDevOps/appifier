@@ -9,6 +9,7 @@ autoload(:Open3, 'open3')
 # Builder
 class Appifier::Builder
   include(Appifier::Mixins::Fs)
+  include(Appifier::Mixins::Inject)
   include(Appifier::Mixins::Shell)
   include(Appifier::Mixins::Verbose)
 
@@ -16,21 +17,29 @@ class Appifier::Builder
   attr_reader :recipe
 
   # @param [String] recipe
-  def initialize(recipe, docker: true, install: false, config: Appifier.container[:config])
-    @config = config
-    @recipe = Appifier::Recipe.new(recipe, config: config).freeze
+  #
+  # @option kwargs [Boolean] :docker
+  # @option kwargs [Boolean] :install
+  def initialize(recipe, docker: true, install: false, **kwargs)
+    inject(config: kwargs[:config], lister: [kwargs[:lister], :builds_lister]).assert { !values.include?(nil) }
+
+    @recipe = Appifier::Recipe.new(recipe, config: self.config).freeze
     # noinspection RubySimplifyBooleanInspection
     @docker = !!docker
     # noinspection RubySimplifyBooleanInspection
     @installable = !!install
-    @tmpdir = config.fetch('cache_dir')
+    @tmpdir = self.config.fetch('cache_dir')
   end
 
+  # Return an array of created files.
+  #
   # @return [Array<Pathname>]
   def call
     build(downloadables)
 
-    Appifier::Integration.new(build_dir.join('out'), recipe: recipe, install: installable?).call
+    [builds.last].tap do |builds|
+      Appifier::Integration.new(builds.fetch(0), recipe: recipe).call if installable?
+    end
   end
 
   # @return [Hash{String => String}]
@@ -122,9 +131,21 @@ class Appifier::Builder
   # @return [Pathname]
   attr_reader :builder
 
+  # @return [Appifier::BuildsLister]
+  attr_reader :lister
+
   # @raise [ArgumentError]
   def recipe=(recipe)
     @recipe = recipe.to_sym
+  end
+
+  # Get list of builds (through lister) for current app.
+  #
+  # @return [Array<Pathname>]
+  def builds
+    recipe.to_h.fetch('app').yield_self do |app_name|
+      lister.call.fetch(app_name).map { |build| Pathname.new(build.path) }
+    end
   end
 
   # @param [Array<Appifier::Downloadable>] scripts
