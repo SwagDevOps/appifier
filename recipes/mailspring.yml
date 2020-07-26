@@ -2,14 +2,18 @@ app: Mailspring
 lowerapp: mailspring
 
 ingredients:
-  packages:
-    - mailspring
+  dist: trusty
+  sources:
+    - http://archive.ubuntu.com/ubuntu/ trusty main universe
+  packages: [] # [libgcrypt11, libnotify4, libnss3, libsecret-1-0]
   script:
     - set -eux
+    # cleanup --------------------------------------------------------
+    - rm -rf *.deb *.sh VERSION *.gz
     # variables ------------------------------------------------------
     - URL='https://updates.getmailspring.com/download?platform=linuxDeb'
     - DLD=$(curl -LIs -o /dev/null -w %{url_effective} "$URL")
     - VERSION=$(echo $DLD | awk -F 'mailspring-' '{print $2}' | cut -d - -f 1)
     # output files ---------------------------------------------------
     - echo "${VERSION}" > VERSION
-    - curl "$DLD" -o "mailspring-${VERSION}.deb"
+    - wget --trust-server-names -c "$DLD" -O "mailspring-${VERSION}.deb"
