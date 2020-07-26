@@ -8,6 +8,19 @@
       Appifier::BuildsLister.new(builds_dir)
     end
   end,
+  logged_runner: lambda do
+    self[:config].fetch('cache_dir').yield_self do |cache_dir|
+      # @formatter:off
+      Appifier::LoggedRunner.new(cache_dir.join('logs'), env: {
+        ARCH: self[:config].fetch('build_arch'),
+        LC_ALL: 'C.UTF-8',
+        LANG: 'C.UTF-8',
+        LANGUAGE: 'C.UTF-8',
+        FUNCTIONS_SH: cache_dir.join('functions.sh'),
+      }.dup.map { |k, v| [k.to_s.freeze, v.to_s.freeze] }.freeze)
+      # @formatter:off
+    end
+  end,
   verbose: false,
   fs: lambda do
     autoload(:FileUtils, 'fileutils')
