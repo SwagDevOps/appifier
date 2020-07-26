@@ -23,7 +23,7 @@ ingredients:
     - echo "\${VERSION}" > VERSION
     - wget --trust-server-names "\${DOWNLOAD_URL}" -O "\${FILE}"
     - chmod +x "\${FILE}"
-    - "./\${FILE}" --appimage-extract
+    - ./"\${FILE}" --appimage-extract
     # ensure extracted directory -------------------------------------
     - test -d squashfs-root
     - EOF
@@ -33,3 +33,15 @@ script:
   - set -eux
   - rm -rf ./*/
   - mv -v ../squashfs-root/* .
+  - rm -fv molotov.png
+  - cp usr/share/icons/hicolor/1024x1024/apps/molotov.png molotov.png
+
+integration:
+  name: Molotov
+  executable: molotov
+  desktop:
+    name: molotov
+    override:
+      'Desktop Entry':
+        Exec: '{{executable.path}} %u'
+        Icon: '{{icon.path}}'
