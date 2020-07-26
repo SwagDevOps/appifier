@@ -21,26 +21,44 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.files         = [
     ".yardopts",
-    "bin/appify",
+    "bin/appifier",
     "lib/appifier.rb",
     "lib/appifier/Dockerfile",
+    "lib/appifier/base_cli.rb",
     "lib/appifier/builder.rb",
+    "lib/appifier/builds_lister.rb",
+    "lib/appifier/builds_lister/build.rb",
     "lib/appifier/bundled.rb",
     "lib/appifier/cli.rb",
+    "lib/appifier/cli/runner.rb",
     "lib/appifier/config.rb",
+    "lib/appifier/container.rb",
+    "lib/appifier/container/config.rb",
     "lib/appifier/dockerfile.rb",
     "lib/appifier/downloadable_string.rb",
+    "lib/appifier/execution.rb",
+    "lib/appifier/file_url.rb",
     "lib/appifier/integration.rb",
     "lib/appifier/integration/builds_list.rb",
     "lib/appifier/integration/desktop.rb",
     "lib/appifier/integration/extraction.rb",
     "lib/appifier/integration/install.rb",
     "lib/appifier/integration/install/desktop_builder.rb",
+    "lib/appifier/json_printer.rb",
+    "lib/appifier/logged_runner.rb",
+    "lib/appifier/mixins.rb",
+    "lib/appifier/mixins/fs.rb",
+    "lib/appifier/mixins/inject.rb",
+    "lib/appifier/mixins/printer.rb",
+    "lib/appifier/mixins/shell.rb",
+    "lib/appifier/mixins/verbose.rb",
+    "lib/appifier/pkg_functions.rb",
     "lib/appifier/pkg_script.rb",
     "lib/appifier/pkg_script_docker.rb",
     "lib/appifier/recipe.rb",
     "lib/appifier/recipes/caprine.yml",
     "lib/appifier/recipes/chromium_canary.yml",
+    "lib/appifier/recipes/ffmpeg.yml",
     "lib/appifier/recipes/gitkraken.yml",
     "lib/appifier/recipes/insomnia.yml",
     "lib/appifier/recipes/mailspring.yml",
@@ -52,13 +70,17 @@ Gem::Specification.new do |s|
     "lib/appifier/version.yml",
   ]
 
+  s.add_runtime_dependency("dry-container", ["~> 0.4"])
   s.add_runtime_dependency("iniparser", ["~> 1.0"])
   s.add_runtime_dependency("kamaze-version", ["~> 1.0"])
   s.add_runtime_dependency("liquid", ["~> 4.0"])
+  s.add_runtime_dependency("rouge", ["~> 3.21"])
+  s.add_runtime_dependency("sys-proc", ["~> 1.1"])
+  s.add_runtime_dependency("thor", ["~> 1.0"])
 
   s.bindir = "bin"
   s.executables = [
-    "appify",
+    "appifier",
   ]
 end
 

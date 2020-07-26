@@ -9,7 +9,7 @@
   'lib/**/version.yml',
   'lib/**/recipes/*.yml',
   'lib/**/Dockerfile',
-  'bin/appify',
+  'bin/appifier',
 ].tap do |patterns|
   self.singleton_class.define_method(:files) do
     patterns.map { |m| Dir.glob(m) }.flatten.keep_if { |f| File.file?(f) }.sort
