@@ -30,7 +30,8 @@ module Shammable
   def sham(name) # rubocop:disable Metrics/AbcSize
     shams_store.tap do |shams|
       shams[name.to_sym] ||= lambda do
-        self.const_get(:Config).instance.freeze[:path].join("#{name}.rb").read.yield_self do |content|
+        # self.const_get(:Config)
+        Config.instance.freeze[:path].join("#{name}.rb").read.yield_self do |content|
           instance_eval(content).yield_self { |v| Struct.new(*v.keys).new(*v.values) }
         end
       end.call
