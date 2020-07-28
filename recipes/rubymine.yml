@@ -21,16 +21,15 @@ script:
   # build ------------------------------------------------------------
   - mkdir -p opt/$SHORTNAME
   - tar zxvf ../${SHORTNAME}.tar.gz --directory "opt/${SHORTNAME}" --strip-components=1
-  - ln -sr opt/$SHORTNAME/bin/$SHORTNAME.sh usr/bin/$SHORTNAME
-  - ln -sr opt/$SHORTNAME/bin/$SHORTNAME.png .
-  - ln -sr opt/$SHORTNAME/bin/$SHORTNAME.svg .
+  - ln opt/$SHORTNAME/bin/$SHORTNAME.sh usr/bin/$SHORTNAME
+  - ln opt/$SHORTNAME/bin/$SHORTNAME.svg .
   - cat > $FULLNAME.desktop << EOF
   - [Desktop Entry]
   - Version=1.0
   - Type=Application
   - Name=$FULLNAME
   - Icon=$SHORTNAME
-  - Exec=$SHORTNAME
+  - Exec=$SHORTNAME %u
   - Comment=The smartest Ruby IDE
   - Categories=Development;IDE;
   - Terminal=false
@@ -39,3 +38,13 @@ script:
   - rm -rf opt/*/jbr/legal/*.desktop
   - rm -rf opt/*/bin/fsnotifier-arm
   - rm -rf opt/*/bin/fsnotifier
+
+integration:
+  name: RubyMine
+  executable: rubymine
+  desktop:
+    name: rubymine
+    override:
+      'Desktop Entry':
+        Exec: '{{executable.path}} %u'
+        Icon: '{{icon.path}}'
