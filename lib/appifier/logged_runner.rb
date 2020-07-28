@@ -8,16 +8,33 @@ class Appifier::LoggedRunner
   include(Appifier::Mixins::Fs)
   include(Appifier::Mixins::Shell)
 
+  # @return [String]
+  attr_reader :mode
+
   # @param [String] directory
   def initialize(directory, env: {})
     @directory = Pathname.new(directory).freeze
     @env = env.to_h.transform_values(&:freeze).freeze
+    @mode = 'a'
   end
 
-  def call(*args, name:)
-    prepare(name) do
-      logs_for(name).transform_values { |v| File.open(v, 'w') }.tap do |options|
-        sh(*[env].concat(args).concat([options]))
+  # Call commands and collect logs by given names.
+  #
+  # @param [Hash{}Symbol => Array] definitions
+  #
+  # Sample of use:
+  #
+  # ```
+  # logged_runner.call({ 'sample' => [['true']] })
+  # ```
+  def call(definitions)
+    definitions.each do |name, commands|
+      prepare(name) do
+        logs_for(name).transform_values { |v| File.open(v, self.mode) }.tap do |options|
+          commands.each do |command|
+            sh(*[env].concat(command).concat([options]))
+          end
+        end
       end
     end
   end

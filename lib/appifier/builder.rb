@@ -133,7 +133,7 @@ class Appifier::Builder
         fs.cp(recipe.file.to_s, f)
       end
 
-      logged_runner.call(scripts.map(&:call).fetch(0).to_s, target, name: recipe.to_s)
+      logged_runner.call({ recipe.to_s => [[scripts.map(&:call).fetch(0).to_s, target]] })
     end
   end
 end
