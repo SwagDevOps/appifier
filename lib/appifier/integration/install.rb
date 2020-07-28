@@ -9,23 +9,29 @@ autoload(:SecureRandom, 'securerandom')
 class Appifier::Integration::Install
   autoload(:DesktopBuilder, "#{__dir__}/install/desktop_builder")
 
-  include(Appifier::Mixins::Shell)
   include(Appifier::Mixins::Fs)
+  include(Appifier::Mixins::Inject)
 
-  def initialize(source, target, parameters:, config: Appifier.container[:config])
+  def initialize(source, target, parameters:, **kwargs) # rubocop:disable Metrics/AbcSize
+    # @formatter:off
+    {
+      config: kwargs[:config],
+      logged_runner: kwargs[:logged_runner],
+    }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
+    # @formatter:on
+
     @parameters = parameters.to_h.freeze
     @source = Pathname.new(source).realpath.freeze
     @target = Pathname.new(target).freeze
-    @config = config
     @backup = Pathname.new(target).dirname.join(".#{target.basename}.#{SecureRandom.hex}").freeze
+    # set extraction ----------------------------------------------------------
+    @extraction = Appifier::Integration::Extraction.new(source, name: parameters.fetch('logname'))
   end
 
   # Extracted files path.
   #
   # @return [Extraction]
-  def extraction
-    @extraction ||= Appifier::Integration::Extraction.new(source)
-  end
+  attr_reader :extraction
 
   def call
     prepared do |dir|
@@ -63,14 +69,17 @@ class Appifier::Integration::Install
 
   attr_reader :config
 
+  # @return [Appifier::LoggedRunner]
+  attr_reader :logged_runner
+
   def prepared(&block) # rubocop:disable Metrics/AbcSize
     target.tap do |dir|
       (fs.mv(dir, backup) if dir.exist?).tap { fs.mkdir_p(dir) }
 
       begin
         return block.call(dir).tap { fs.rm_rf(backup) }
-      rescue StandardError, SignalException
-        fs.rm_rf(dir).tap { fs.mv(backup, dir) }
+      rescue StandardError, SignalException => _e
+        fs.rm_rf(dir).tap { fs.mv(backup, dir) if backup.exist? }
 
         raise
       end
@@ -93,6 +102,8 @@ class Appifier::Integration::Install
       dir.join("icon#{extraction.icon.extname}").tap do |icon_path|
         fs.cp(extraction.icon, icon_path)
         fs.ln_sf(icon_path, dir.join('.icon'))
+      rescue RuntimeError => e
+        warn(e.message)
       end
 
       apply_icon(dir, icon_link)
@@ -104,7 +115,9 @@ class Appifier::Integration::Install
   # @see https://www.commandlinux.com/man-page/man1/gvfs-set-attribute.1.html
   # @see https://www.mankier.com/1/gio#set
   def apply_icon(dir, icon_path)
-    sh('gio', 'set', dir.to_s, '-t', 'string', 'metadata::custom-icon', "file://#{icon_path}")
+    ['gio', 'set', dir.to_s, '-t', 'string', 'metadata::custom-icon', "file://#{icon_path}"].tap do |command|
+      logged_runner.call(parameters.fetch('logname') => [command])
+    end
   rescue RuntimeError => e
     warn(e) unless verbose?
   end

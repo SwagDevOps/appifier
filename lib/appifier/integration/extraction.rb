@@ -8,8 +8,12 @@ autoload(:SecureRandom, 'securerandom')
 #
 # Extraction MUST contain a valid desktop file and an icon.
 class Appifier::Integration::Extraction < Pathname
-  include(Appifier::Mixins::Shell)
+  include(Appifier::Mixins::Inject)
   include(Appifier::Mixins::Verbose)
+
+  # @return [String]
+  # @return [String]
+  attr_reader :name
 
   # @return [Pathname]
   attr_reader :source
@@ -17,7 +21,10 @@ class Appifier::Integration::Extraction < Pathname
   # @return [Array<String>]
   attr_reader :extractables
 
-  def initialize(source)
+  def initialize(source, name:, **kwargs)
+    inject({ logged_runner: kwargs[:logged_runner] }).assert { !values.include?(nil) }
+
+    @name = name.to_s
     @source = Pathname.new(source).realpath.freeze
     @extractables = %w[*.desktop .DirIcon *.svg *.png].map(&:freeze).freeze
 
@@ -31,7 +38,9 @@ class Appifier::Integration::Extraction < Pathname
         extractables.each do |target|
           next if extracted?(target)
 
-          sh(source.realpath.to_s, '--appimage-extract', target)
+          [source.realpath.to_s, '--appimage-extract', target].tap do |command|
+            logged_runner.call({ self.name => [command] })
+          end
         end
       end
     end.call
@@ -72,9 +81,10 @@ class Appifier::Integration::Extraction < Pathname
     end
   end
 
-  class << self
-    protected
+  # @return [Appifier::LoggedRunner]
+  attr_reader :logged_runner
 
+  class << self
     # @api private
     #
     # @return [Pathname]
