@@ -10,7 +10,6 @@ autoload(:Open3, 'open3')
 class Appifier::Builder
   include(Appifier::Mixins::Fs)
   include(Appifier::Mixins::Inject)
-  include(Appifier::Mixins::Shell)
   include(Appifier::Mixins::Verbose)
 
   # @return [Appifier::Recipe]
