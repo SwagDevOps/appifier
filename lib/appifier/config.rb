@@ -31,6 +31,8 @@ class Appifier::Config < Hash
       {
         cache_dir: xdg_dir(:cache).join('appifier'),
         build_arch: host_arch.to_s,
+        # github related ------------------------------------------------------
+        appimagekit_release: :continuous, # pre-release or 12 for latest stable release
         # integration values --------------------------------------------------
         applications_dir: whoami.fetch(:dir).join('Applications'),
         bin_dir: whoami.fetch(:dir).join('.local', 'bin'),
