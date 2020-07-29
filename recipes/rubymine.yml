@@ -6,7 +6,7 @@ ingredients:
     - SHORTNAME=rubymine
     - FILE=$(head -10 /dev/urandom | tr -cd '[:alnum:]' | cut -c -32).part
     # cleanup --------------------------------------------------------
-    - rm -rf *.gz *.png *.sh VERSION *.part
+    - rm -rf *.png *.sh VERSION *.part *.gz
     # download -------------------------------------------------------
     - DLD=$(curl -LIs -o /dev/null -w %{url_effective} 'https://data.services.jetbrains.com/products/download?code=RM&platform=linux')
     - test -n "${DLD}"
@@ -21,7 +21,7 @@ script:
   # build ------------------------------------------------------------
   - mkdir -p opt/$SHORTNAME
   - tar zxvf ../${SHORTNAME}.tar.gz --directory "opt/${SHORTNAME}" --strip-components=1
-  - ln opt/$SHORTNAME/bin/$SHORTNAME.sh usr/bin/$SHORTNAME
+  - ln -sr opt/$SHORTNAME/bin/$SHORTNAME.sh usr/bin/$SHORTNAME
   - ln opt/$SHORTNAME/bin/$SHORTNAME.svg .
   - cat > $FULLNAME.desktop << EOF
   - [Desktop Entry]
@@ -43,7 +43,7 @@ integration:
   name: RubyMine
   executable: rubymine
   desktop:
-    name: rubymine
+    name: 'jetbrains-rubymine'
     override:
       'Desktop Entry':
         Exec: '{{executable.path}} %u'
