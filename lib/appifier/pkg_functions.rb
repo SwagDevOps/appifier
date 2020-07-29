@@ -15,9 +15,11 @@ class Appifier::PkgFunctions < Appifier::DownloadableString
     # Realease target.
     #
     # @return [String]
+    # @return [Integer, Symbol]
     # @see https://github.com/AppImage/AppImageKit/releases
+    # @ee https://github.com/AppImage/AppImageKit/issues/1060
     def release
-      12.to_s
+      Appifier.container[:config].fetch('appimagekit_release')
     end
 
     def replacements
