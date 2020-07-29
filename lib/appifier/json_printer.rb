@@ -30,7 +30,7 @@ class Appifier::JsonPrinter
   #
   # @return [String]
   def call(payload)
-    format(payload).tap { |s| output.write("#{s.strip}\n") }
+    format(payload).tap { |s| output.puts(s.strip) }
   end
 
   protected
