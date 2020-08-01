@@ -24,7 +24,7 @@ class Appifier::Builder
     {
       config: kwargs[:config],
       lister: [kwargs[:lister], :builds_lister],
-      logged_runner: kwargs[:logged_runner],
+      scripts_runner: [kwargs[:scripts_runner], :'build.scripts_runner'],
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
 
@@ -40,7 +40,7 @@ class Appifier::Builder
   #
   # @return [Array<Pathname>]
   def call
-    build(downloadables)
+    build
 
     [builds.last].tap do |builds|
       Appifier::Integration.new(builds.fetch(0), recipe: recipe).call if installable?
@@ -71,19 +71,6 @@ class Appifier::Builder
     end
   end
 
-  # @return [Array<Appifier::DownloadableString>]
-  def downloadables
-    # @formatter:off
-    {
-      # fist item is actual executable script
-      true => [Appifier::PkgScriptDocker, Appifier::Dockerfile, Appifier::PkgScript, Appifier::PkgFunctions],
-      false => [Appifier::PkgScript, Appifier::PkgFunctions]
-    }.fetch(docker?).yield_self do |files| # @formatter:on
-      # @type [Class<Appifier::DownloadableString>] klass
-      files.map(&:new)
-    end
-  end
-
   # Target used during build.
   #
   # Differs depending on docker or raw script execution:
@@ -108,8 +95,8 @@ class Appifier::Builder
   # @return [Appifier::BuildsLister]
   attr_reader :lister
 
-  # @return [Appifier::LoggedRunner]
-  attr_reader :logged_runner
+  # @return [Appifier::Scripts::Runer]
+  attr_reader :scripts_runner
 
   # @raise [ArgumentError]
   def recipe=(recipe)
@@ -125,15 +112,14 @@ class Appifier::Builder
     end
   end
 
-  # @param [Array<Appifier::Downloadable>] scripts
-  def build(scripts) # rubocop:disable Metrics/AbcSize
+  def build
     build_dir do
       Pathname.new('recipes').join("#{recipe.filename}.yml").tap do |f|
         fs.mkdir_p(f.dirname)
         fs.cp(recipe.file.to_s, f)
       end
 
-      logged_runner.call({ recipe.to_s => [[scripts.map(&:call).fetch(0).to_s, target]] })
+      scripts_runner.call(target, docker: docker?)
     end
   end
 end

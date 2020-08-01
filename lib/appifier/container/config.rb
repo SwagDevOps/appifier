@@ -8,6 +8,7 @@
       Appifier::BuildsLister.new(builds_dir)
     end
   end,
+  'build.scripts_runner': -> { Appifier::Scripts::Runner.new },
   logged_runner: lambda do
     self[:config].fetch('cache_dir').yield_self do |cache_dir|
       # @formatter:off
