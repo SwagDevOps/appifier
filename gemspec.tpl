@@ -37,7 +37,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = ">= 2.5.0"
   s.require_paths = ["lib"]
   s.files         = [
-    <?rb for file in files ?>
+    <?rb for file in files.uniq ?>
     #{"%s," % quote(file)}
     <?rb end ?>
   ]
