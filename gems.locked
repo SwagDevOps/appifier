@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/SwagDevOps/kamaze-project.git
-  revision: 48bd956e0b5d9088fbe5c4ca94870521f59bd1dd
+  revision: 26ff9270afa63a0cabdffd8145ae42c460241701
   branch: develop
   specs:
     kamaze-project (1.1.0)
@@ -87,8 +87,8 @@ GEM
       rubocop-ast (>= 0.1.0, < 1.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 2.0)
-    rubocop-ast (0.2.0)
-      parser (>= 2.7.0.1)
+    rubocop-ast (0.3.0)
+      parser (>= 2.7.1.4)
     ruby-progressbar (1.10.1)
     rugged (1.0.1)
     simplecov (0.18.5)
