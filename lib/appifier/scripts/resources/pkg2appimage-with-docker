@@ -1,0 +1,107 @@
+#!/usr/bin/env sh
+
+# @todo implement cache
+#
+# @see Appifier::Scripts::Pkg2appimageWithDocker
+# @see https://github.com/AppImage/pkg2appimage/blob/d8117501942f2b4780bac0de551fc431d5901562/pkg2appimage-with-docker
+# @see https://github.com/AppImage/pkg2appimage/issues/373#issuecomment-666293168
+
+set -eu
+
+CONTAINER_ID=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)
+CONTAINER_NAME="appimage-build-${CONTAINER_ID}"
+IMAGE_NAME="appimage-build-$(id -u)"
+
+main() {
+    local recipe=$(prepare_recipe "$1")
+    local recipe_name=$(basename -- "$recipe" .yml)
+
+    log info "Building $recipe_name in a container..."
+    container_build
+    container_run "$recipe"
+}
+
+container_build() {
+    docker build -t "${IMAGE_NAME}" .
+}
+
+container_run() {
+    local recipe=$1
+
+    log info "Running container (${CONTAINER_NAME})"
+    trap cleanup 0 2 15
+    docker run -it \
+        --name "${CONTAINER_NAME}" \
+        --cap-add SYS_ADMIN \
+        --device /dev/fuse \
+        --security-opt apparmor:unconfined \
+        --user $(id -u):$(id -g) \
+        -v "$(readlink -f -- out):/workspace/out" \
+        -v "$(readlink -f -- pkg2appimage):/workspace/pkg2appimage:ro" \
+        -v "$(readlink -f -- "$recipe"):/workspace/${recipe}:ro" \
+        -v "$(readlink -f functions.sh):/workspace/functions.sh:ro" \
+        -e ARCH="${ARCH:-x86_64}" \
+        "${IMAGE_NAME}" \
+        ./pkg2appimage "$recipe"
+}
+
+prepare_recipe() {
+    local recipe=$1
+    recipe=$(
+        test "$(basename -- "$recipe" .yml)" = "$recipe" || {
+            echo "$recipe"
+            return 0
+        }
+        echo "${recipe}.yml"
+    )
+
+    test -f "$recipe" || {
+        test -f "recipes/${recipe}" && {
+            recipe="recipes/${recipe}"
+        } || {
+            log warn "cannot access '${recipe}': No such file or directory"
+            return 2 # ENOENT
+        }
+    }
+
+    echo "$recipe"
+}
+
+log() {
+    local type="$1"
+    local message="$2"
+    local color=$(
+        case "${type}" in
+        info) echo '96' ;;
+        warn) echo '93' ;;
+        *) echo '99' ;;
+        esac
+    )
+
+    (
+        test -t 2 && {
+            echo "\e[${color}m\e[1m${message}\e[0m" || :
+        } || {
+            echo "$message"
+        }
+    ) 1>&2
+}
+
+cleanup() {
+    local retcode=$?
+
+    case "${retcode}" in
+    0)
+        log info "cleaning up..."
+        ;;
+    *)
+        log warn "error occurred (${retcode}), cleaning up..."
+        ;;
+    esac
+
+    docker rm -f "$CONTAINER_NAME" >/dev/null
+
+    exit "$retcode"
+}
+
+main "$@"
