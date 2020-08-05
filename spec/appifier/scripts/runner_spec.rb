@@ -19,4 +19,11 @@ describe Appifier::Scripts::Runner, :'appifier/scripts/runner' do
       it { expect(subject.__send__(:sequence, k)).to eq(v) }
     end
   end
+
+  # inject --------------------------------------------------------------------
+  it { expect(subject).to be_a(Appifier::Mixins::Inject) }
+
+  context '#logged_runner' do
+    it { expect(subject.__send__(:logged_runner)).to be_a(Appifier::LoggedRunner) }
+  end
 end
