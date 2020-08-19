@@ -17,6 +17,7 @@ describe Appifier::Scripts::Pkg2appimageWithDocker, :'appifier/scripts/pkg2appim
 
   context '.replacements' do
     it { expect(described_class.replacements).to be_a(Hash) }
+    it { expect(described_class.replacements).to be_empty }
   end
 end
 
@@ -63,7 +64,7 @@ describe Appifier::Scripts::Pkg2appimageWithDocker, :'appifier/scripts/pkg2appim
     it { expect(subject.to_path).to be_a(String) }
 
     it do
-      'input'.tap do |fname|
+      'pkg2appimage-with-docker'.tap do |fname|
         expect(subject.to_path).to match(%r{/#{fname}$})
         expect(subject.to_path).to eq(Pathname.new(Dir.pwd).join(fname).to_s)
       end
