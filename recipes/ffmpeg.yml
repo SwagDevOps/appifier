@@ -53,4 +53,6 @@ script:
 integration:
   name: FFmpeg
   executable: ffmpeg
-  desktop: # @todo support nil for desktop integration
+  desktop:
+    name: ffmpeg
+    disabled: true
