@@ -12,7 +12,9 @@ class Appifier::Integration::Install
   include(Appifier::Mixins::Fs)
   include(Appifier::Mixins::Inject)
 
-  def initialize(source, target, parameters:, **kwargs) # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/AbcSize
+
+  def initialize(source, target, parameters:, **kwargs)
     # @formatter:off
     {
       config: kwargs[:config],
@@ -27,24 +29,27 @@ class Appifier::Integration::Install
     # set extraction ----------------------------------------------------------
     @extraction = Appifier::Integration::Extraction.new(source, name: parameters.fetch('logname'))
   end
+  # rubocop:enable Metrics/AbcSize
 
   # Extracted files path.
   #
   # @return [Extraction]
   attr_reader :extraction
 
+  # @return [Array<Pathname>]
   def call
+    # noinspection RubyYardReturnMatch
     prepared do |dir|
-      dir.tap do
-        make_desktop(dir)
-        make_icon(dir)
-
-        make_executable(dir, source)
-        symlimk_desktop(dir)
-        symlimk_executable(dir)
-        clean
-      end
-    end
+      # @formatter:off
+      [
+        make_desktop(dir),
+        make_icon(dir),
+        make_executable(dir, source),
+        symlimk_desktop(dir),
+        symlimk_executable(dir),
+      ].flatten.compact
+      # @formatter:on
+    end.tap { clean }
   end
 
   protected
@@ -72,7 +77,9 @@ class Appifier::Integration::Install
   # @return [Appifier::LoggedRunner]
   attr_reader :logged_runner
 
-  def prepared(&block) # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/AbcSize
+
+  def prepared(&block)
     target.tap do |dir|
       (fs.mv(dir, backup) if dir.exist?).tap { fs.mkdir_p(dir) }
 
@@ -85,15 +92,18 @@ class Appifier::Integration::Install
       end
     end
   end
+  # rubocop:enable Metrics/AbcSize
 
   def clean
     extraction&.tap { |dir| fs.rm_rf(dir) }
   end
 
   def make_executable(dir, executable)
-    fs.ln(executable, dir.join('app'))
-  rescue Errno::EXDEV
-    fs.cp(executable, dir.join('app'))
+    [executable, dir.join('app')].tap do |args|
+      fs.ln(*args)
+    rescue Errno::EXDEV
+      fs.cp(*args)
+    end
   end
 
   # @return [Pathname]
@@ -129,20 +139,33 @@ class Appifier::Integration::Install
     DesktopBuilder.new(extraction.desktop.to_s, dir.to_s, parameters: parameters, config: config).call
   end
 
-  def symlimk_desktop(dir)
-    (parameters['desktop']&.fetch('name', nil) || extraction.desktop.basename('.desktop')).tap do |name|
-      config.fetch('desktops_dir').yield_self do |target_dir|
-        fs.mkdir_p(target_dir)
+  # rubocop:disable Metrics/AbcSize
 
-        return fs.ln_sf(dir.join('app.desktop'), target_dir.join("#{name}.desktop"))
+  # Create symlimk for application desktop.
+  #
+  # use ``integration.desktop.created = false`` to disable desktop symlink creation.
+  #
+  # @return [Array<Pathname>, nil]
+  def symlimk_desktop(dir)
+    (parameters['desktop']&.fetch('name', nil) || extraction.desktop.basename('.desktop')).yield_self do |name|
+      config.fetch('desktops_dir').join("#{name}.desktop").yield_self do |desktop_file|
+        return nil if parameters['desktop']&.fetch('disabled', false)
+
+        fs.mkdir_p(desktop_file.dirname)
+        [dir.join('app.desktop'), desktop_file].tap { |result| fs.ln_sf(*result) }
       end
     end
   end
+  # rubocop:enable Metrics/AbcSize
 
+  # @return [Array<Pathname>]
   def symlimk_executable(dir)
     config.fetch('bin_dir').yield_self do |target_dir|
       fs.mkdir_p(target_dir)
-      fs.ln_sf(dir.join('app'), target_dir.join(parameters.fetch('executable')))
+
+      [dir.join('app'), target_dir.join(parameters.fetch('executable'))].tap do |result|
+        fs.ln_sf(*result)
+      end
     end
   end
 end

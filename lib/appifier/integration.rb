@@ -61,12 +61,12 @@ class Appifier::Integration
     parameters.fetch(*args, &block)
   end
 
-  # return [Pathname]
+  # return [Array<Pathname>]
   def call
     build.tap do
       config.fetch('applications_dir').join(name).tap do |app_dir|
-        Install.new(build, app_dir, parameters: parameters).tap do |install| # rubocop:disable Style/SymbolProc
-          install.call # @todo returns file created during install
+        Install.new(build, app_dir, parameters: parameters).tap do |install|
+          return install.call # @todo returns file created during install
         end
       end
     end

@@ -42,8 +42,10 @@ class Appifier::Builder
   def call
     build
 
-    [builds.last].tap do |builds|
-      Appifier::Integration.new(builds.fetch(0), recipe: recipe).call if installable?
+    [builds.last].yield_self do |builds|
+      (installable? ? Appifier::Integration.new(builds.fetch(0), recipe: recipe).call : []).yield_self do |files|
+        builds.concat(files).map { |fp| Pathname.new(fp) }.sort.uniq
+      end
     end
   end
 
@@ -95,7 +97,7 @@ class Appifier::Builder
   # @return [Appifier::BuildsLister]
   attr_reader :lister
 
-  # @return [Appifier::Scripts::Runer]
+  # @return [Appifier::Scripts::Runner]
   attr_reader :scripts_runner
 
   # @raise [ArgumentError]
