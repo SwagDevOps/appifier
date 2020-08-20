@@ -73,16 +73,16 @@ log() {
     local color=$(
         case "${type}" in
         info) echo '96' ;;
-        warn) echo '93' ;;
+        warn) echo '91' ;;
         *) echo '99' ;;
         esac
     )
 
     (
         test -t 2 && {
-            echo "\e[${color}m\e[1m${message}\e[0m" || :
+            printf '\e[%sm\e[1m%s\e[0m\n' "$color" "$message" || :
         } || {
-            echo "$message"
+            printf '%s\n' "$message"
         }
     ) 1>&2
 }
