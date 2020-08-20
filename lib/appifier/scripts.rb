@@ -27,7 +27,7 @@ module Appifier::Scripts
     def call(recipe, docker:)
       target = (docker ? recipe : recipe.realpath).to_s
 
-      sequence(docker).map(&:new).tap do |scripts|
+      sequence(docker).map { |klass| klass.new.tap(&:call) }.tap do |scripts|
         logged_runner.call({ recipe.to_s => [[scripts.fetch(0).to_path, target]] })
       end
     end
