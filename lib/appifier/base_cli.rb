@@ -16,24 +16,21 @@ class Appifier::BaseCli
     # @!method runner
     #   @return [Appifier::BaseCli::Runner]
   end
-  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 
   # A new instance of BaseCli.
   def initialize
     { instance: self, commands: commands }.tap do |params|
-      @core = Class.new(Thor) do
+      core.instance_eval do
         params.fetch(:commands).each do |command_name, command|
           desc(command.fetch(:usage), command.fetch(:desc))
           command.fetch(:options, {}).each { |k, v| method_option(k, v) }
           define_method(command_name, &command.fetch(:method))
-          no_commands do
-            define_method(:runner) { params.fetch(:instance).class.const_get(:Runner).new(options) }
-          end
         end
       end
     end
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
+  # rubocop:enable
 
   # @param [Array<String>] given_args
   # @param [Hash] config
@@ -48,7 +45,15 @@ class Appifier::BaseCli
   protected
 
   # @return [Class<Thor>]
-  attr_reader :core
+  def core
+    { instance: self, commands: commands }.yield_self do |params|
+      @core ||= Class.new(Thor) do
+        no_commands do
+          define_method(:runner) { params.fetch(:instance).class.const_get(:Runner).new(options) }
+        end
+      end
+    end
+  end
 
   # @return [Hash{Symbol => Hash}]
   def commands
