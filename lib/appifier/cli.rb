@@ -9,6 +9,8 @@ require_relative '../appifier'
 # ```ruby
 # Appifier::Cli.new.call
 # ```
+#
+# @see Appifier::Cli::Runner
 class Appifier::Cli < Appifier::BaseCli
   class << self
     def commands # rubocop:disable Metrics/MethodLength:
@@ -34,6 +36,11 @@ class Appifier::Cli < Appifier::BaseCli
             }
           },
           method: ->(recipe) { runner.call(:build, recipe) }
+        },
+        config: {
+          desc: 'Display config',
+          options: {},
+          method: -> { runner.call(:config) }
         }
       }
       # @formatter:on
