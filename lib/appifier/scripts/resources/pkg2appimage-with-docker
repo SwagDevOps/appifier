@@ -3,7 +3,7 @@
 # @todo implement cache
 #
 # @see Appifier::Scripts::Pkg2appimageWithDocker
-# @see https://github.com/AppImage/pkg2appimage/blob/d8117501942f2b4780bac0de551fc431d5901562/pkg2appimage-with-docker
+# @see https://github.com/AppImage/pkg2appimage/blob/7ca1e6efce190a0c81c863b23419a2a11ea434af/pkg2appimage-with-docker
 # @see https://github.com/AppImage/pkg2appimage/issues/373#issuecomment-666293168
 
 set -eu
