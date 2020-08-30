@@ -51,14 +51,19 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
     # @return [Hash]
     # @api private
     def optionize(container, options = {})
-      return options if container.frozen?
+      lambda do
+        return options if container.frozen?
 
-      options.transform_keys(&:to_sym).dup.tap do |options| # rubocop:disable Lint/ShadowingOuterLocalVariable
-        # k: container key, v: options key
-        { verbose: :verbose }.each do |k, v|
-          -> { options.delete(k) }.tap { container[v] = options[k] }.call
+        # noinspection RubyScope
+        options.transform_keys(&:to_sym).dup.tap do |options| # rubocop:disable Lint/ShadowingOuterLocalVariable
+          # k: options key, v: container key
+          { verbose: :verbose }.each do |k, v|
+            next unless options.key?(k)
+
+            -> { options.delete(k) }.tap { container[v] = options[k] }.call
+          end
         end
-      end.freeze
+      end.call.freeze
     end
   end
 end
