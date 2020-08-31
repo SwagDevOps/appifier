@@ -7,7 +7,12 @@ autoload(:Pathname, 'pathname')
 #
 # Builds are indexed by name and sorted by mtime.
 class Appifier::BuildsLister
-  autoload(:Build, "#{__dir__}/builds_lister/build")
+  # @formatter:off
+  {
+    Build: 'build',
+    ScanResult: 'scan_result',
+  }.each { |s, fp| autoload(s, "#{__dir__}/builds_lister/#{fp}") }
+  # @formatter:on
 
   # @param [String] path
   def initialize(path)
@@ -16,13 +21,10 @@ class Appifier::BuildsLister
 
   # Get builds indexed by name and sorted by mtime.
   #
+  # @return [ScanResult]
   # @return [Hash{String => Array<Build>}]
   def call
-    {}.tap do |h|
-      scan.each do |item|
-        h[item.name] = h[item.name].to_a.concat([item])
-      end
-    end
+    ScanResult.new(scan)
   end
 
   def fetch(*args, &block)
@@ -34,20 +36,12 @@ class Appifier::BuildsLister
   # @return [Pathname]
   attr_reader :path
 
-  def matcher
-    %r{^#{Pathname.new(path)}/(.*)-([0-9]+.*).glibc}
-  end
-
   # Get builds sorted by mtime.
   #
   # @api private
   #
   # @return [Array<Build>]
   def scan
-    Dir.glob("#{path}/*.AppImage").map { |fp| Pathname.new(fp) }.keep_if do |fp|
-      fp.to_s.match(matcher)
-    end.sort_by { |fp| File.mtime(fp) }.map do |fp|
-      Build.new(*fp.to_s.match(matcher).to_a[1..-1].concat([fp]))
-    end
+    Dir.glob("#{path}/*.AppImage").map { |fp| Build.new(fp) }.keep_if(&:version?).sort_by(&:mtime)
   end
 end
