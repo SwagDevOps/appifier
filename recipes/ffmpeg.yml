@@ -2,9 +2,6 @@
 #
 # The latest versions of FFmpeg for Linux kernels 3.2.0 and up.
 #
-# Note: it's highly recommended to use git master builds,
-# because bug fixes and other improvements are added daily.
-#
 # @see https://johnvansickle.com/ffmpeg/
 
 app: FFmpeg
@@ -17,12 +14,12 @@ ingredients:
     - rm -rf VERSION *.zip *.png *.svg *.sh *.deb README *.tar.* ffmpeg-*/
     # variables ------------------------------------------------------
     - ICON_URL='https://appimage.org/images/logo3.svg'
-    - DLD='https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz'
+    - DLD='https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz'
     # output files ---------------------------------------------------
     - wget --trust-server-names -c "${ICON_URL}" -O ffmpeg.svg
     - wget --trust-server-names -c "$DLD" -O 'ffmpeg.tar.xz'
     - tar -xvf ffmpeg.tar.xz
-    - grep -Ei '^\s*build:' */readme.txt | grep -Eo '\-[0-9]{8}\-' | sed 's/-//g' | head -1 > VERSION
+    - grep -Ei '^\s*version:' */readme.txt | awk -F':' '{print $2}' | awk '{print $1}' | head -1 > VERSION
 
 script:
   - set -eu
@@ -32,7 +29,7 @@ script:
   - Version=1.0
   - Name=FFmpeg
   - Comment=A complete, cross-platform solution to record, convert and stream audio and video.
-  - Exec=ffmpeg -i %f
+  - Exec=ffmpeg %f
   - Terminal=true
   - Type=Application
   - Icon=ffmpeg
