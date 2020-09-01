@@ -5,6 +5,8 @@ autoload(:Pathname, 'pathname')
 
 # Describe a build.
 class Appifier::BuildsLister::Build
+  include Appifier::Mixins::Jsonable
+
   # @return [String]
   attr_reader :name
 
@@ -28,6 +30,17 @@ class Appifier::BuildsLister::Build
     end.freeze
   end
 
+  # Get detail about build (public instance_variables).
+  #
+  # @return [Hash{Symbol => Object}]
+  def detail
+    {}.tap do |result|
+      instance_variables.sort.map { |v| v.to_s.gsub(/^@/, '') }.each do |attr|
+        result[attr.to_sym] = self.dup.public_send(attr).dup.freeze if respond_to?(attr)
+      end
+    end
+  end
+
   def version?
     !version.nil?
   end
@@ -38,8 +51,8 @@ class Appifier::BuildsLister::Build
 
   alias to_s to_path
 
-  def to_json(*_)
-    to_path.inspect
+  def to_json(*args)
+    detail.to_json(*args)
   end
 
   protected
