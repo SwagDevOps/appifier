@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative '../scripts'
+require_relative '../downloadables'
 
 # Downloadable (executable) script
-class Appifier::Scripts::Pkg2appimage < Appifier::DownloadableString
+class Appifier::Scripts::Downloadables::Pkg2appimage < Appifier::DownloadableString
   class << self
     def url
       'https://raw.githubusercontent.com/AppImage/pkg2appimage/master/pkg2appimage'

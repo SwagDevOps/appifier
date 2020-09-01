@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
+# rubocop:disable Layout/LineLength
 autoload(:Pathname, 'pathname')
 
-describe Appifier::Scripts::Pkg2appimageWithDocker, :'appifier/scripts/pkg2appimage_with_docker' do
+describe Appifier::Scripts::Downloadables::Pkg2appimageWithDocker, :'appifier/scripts/downloadables/pkg2appimage_with_docker' do
   # class methods -------------------------------------------------------------
   it { expect(described_class).to respond_to(:url).with(0).arguments }
   it { expect(described_class).to respond_to(:executable?).with(0).arguments }
@@ -21,7 +22,7 @@ describe Appifier::Scripts::Pkg2appimageWithDocker, :'appifier/scripts/pkg2appim
   end
 end
 
-describe Appifier::Scripts::Pkg2appimageWithDocker, :'appifier/scripts/pkg2appimage_with_docker' do
+describe Appifier::Scripts::Downloadables::Pkg2appimageWithDocker, :'appifier/scripts/downloadables/pkg2appimage_with_docker' do
   sham(:downloadable_strings).samples['pkg2appimage-with-docker'].tap do |sample|
     let(:fake_class) { sample.builder.call }
     let(:subject) { fake_class.new }
@@ -41,7 +42,7 @@ describe Appifier::Scripts::Pkg2appimageWithDocker, :'appifier/scripts/pkg2appim
   end
 end
 
-describe Appifier::Scripts::Pkg2appimageWithDocker, :'appifier/scripts/pkg2appimage_with_docker' do
+describe Appifier::Scripts::Downloadables::Pkg2appimageWithDocker, :'appifier/scripts/downloadables/pkg2appimage_with_docker' do
   sham(:downloadable_strings).samples['pkg2appimage-with-docker'].tap do |sample|
     let(:fake_class) { sample.builder.call }
     let(:subject) { fake_class.new }
@@ -71,3 +72,4 @@ describe Appifier::Scripts::Pkg2appimageWithDocker, :'appifier/scripts/pkg2appim
     end
   end
 end
+# rubocop:enable Layout/LineLength

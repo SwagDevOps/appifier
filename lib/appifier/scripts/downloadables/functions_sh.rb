@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_relative '../scripts'
+require_relative '../downloadables'
 
 # File supposed to be sourced by each Recipe
 #
 # @see https://github.com/AppImage/pkg2appimage/blob/678e5e14122f14a12c54847213585ea803e1f0e1/functions.sh
 # @see https://github.com/AppImage/AppImageKit/issues/1060
-class Appifier::Scripts::FunctionsSh < Appifier::DownloadableString
+class Appifier::Scripts::Downloadables::FunctionsSh < Appifier::DownloadableString
   class << self
     def url
       'https://raw.githubusercontent.com/AppImage/pkg2appimage/master/functions.sh'
