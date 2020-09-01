@@ -8,6 +8,7 @@ module Appifier::Mixins
   {
     Fs: 'fs',
     Inject: 'inject',
+    Jsonable: 'jsonable',
     Printer: 'printer',
     Shell: 'shell',
     Verbose: 'verbose',
