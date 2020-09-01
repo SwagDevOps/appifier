@@ -1,0 +1,58 @@
+# FFmpeg Static Builds
+#
+# The latest versions of FFmpeg for Linux kernels 3.2.0 and up.
+#
+# Note: it's highly recommended to use git master builds,
+# because bug fixes and other improvements are added daily.
+#
+# @see https://johnvansickle.com/ffmpeg/
+
+app: FFmpeg_Git
+arch: x86_64
+
+ingredients:
+  script:
+    - set -eu
+    # cleanup --------------------------------------------------------
+    - rm -rf VERSION *.zip *.png *.svg *.sh *.deb README *.tar.* ffmpeg-*/
+    # variables ------------------------------------------------------
+    - ICON_URL='https://appimage.org/images/logo3.svg'
+    - DLD='https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz'
+    # output files ---------------------------------------------------
+    - wget --trust-server-names -c "${ICON_URL}" -O ffmpeg.svg
+    - wget --trust-server-names -c "$DLD" -O 'ffmpeg.tar.xz'
+    - tar -xvf ffmpeg.tar.xz
+    - grep -Ei '^\s*build:' */readme.txt | grep -Eo '\-[0-9]{8}\-' | sed 's/-//g' | head -1 > VERSION
+
+script:
+  - set -eu
+  - # desktop -------------------------------------------------------
+  - cat > "ffmpeg.desktop" << EOF
+  - [Desktop Entry]
+  - Version=1.0
+  - Name=FFmpeg_Git
+  - Comment=A complete, cross-platform solution to record, convert and stream audio and video.
+  - Exec=ffmpeg %f
+  - Terminal=true
+  - Type=Application
+  - Icon=ffmpeg
+  - Categories=AudioVideo;Video;
+  - NoDisplay=true
+  - EOF
+  # files ---------------------------------------------------------
+  - cp '../ffmpeg.svg' .
+  - mkdir -p usr/share/applications
+  - cp 'ffmpeg.desktop' usr/share/applications
+  - rm -rfv xdg-mime xdg-settings chrome-wrapper
+  - cp ../*/ffmpeg usr/bin
+  - cp ../*/readme.txt README
+  - # models -----------------------------------------------------
+  - mkdir -p usr/local/share/model
+  - cp -rfv ../*/model/* usr/local/share/model
+
+integration:
+  name: FFmpeg
+  executable: ffmpeg
+  desktop:
+    name: ffmpeg
+    disabled: true
