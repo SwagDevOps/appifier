@@ -106,9 +106,11 @@ class Appifier::Integration::Install
     end
   end
 
-  # @return [Pathname]
+  # rubocop:disable Metrics/AbcSize
+
+  # @return [Arry<Pathname>]
   def make_icon(dir)
-    dir.join('.icon').tap do |icon_link|
+    dir.join('.icon').yield_self do |icon_link|
       dir.join("icon#{extraction.icon.extname}").tap do |icon_path|
         fs.cp(extraction.icon, icon_path)
         fs.ln_sf(icon_path, dir.join('.icon'))
@@ -117,8 +119,11 @@ class Appifier::Integration::Install
       end
 
       apply_icon(dir, icon_link)
+
+      [icon_link, icon_link.realpath].map(&:freeze).freeze
     end
   end
+  # rubocop:enable Metrics/AbcSize
 
   # Apply given icon on given directory.
   #
