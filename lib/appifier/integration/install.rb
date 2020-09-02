@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative '../integration'
-autoload(:FileUtils, 'fileutils')
 autoload(:Pathname, 'pathname')
 autoload(:SecureRandom, 'securerandom')
 
