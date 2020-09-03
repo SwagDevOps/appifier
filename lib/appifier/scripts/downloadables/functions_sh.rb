@@ -17,7 +17,7 @@ class Appifier::Scripts::Downloadables::FunctionsSh < Appifier::DownloadableStri
     # @return [String]
     # @return [Integer, Symbol]
     # @see https://github.com/AppImage/AppImageKit/releases
-    # @ee https://github.com/AppImage/AppImageKit/issues/1060
+    # @see https://github.com/AppImage/AppImageKit/issues/1060
     def release
       Appifier.container[:config].fetch('appimagekit_release')
     end
