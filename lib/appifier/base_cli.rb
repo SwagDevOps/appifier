@@ -5,6 +5,12 @@ autoload(:Thor, 'thor')
 
 # @abstract
 class Appifier::BaseCli
+  # @formatter:off
+  {
+    Core: 'core',
+  }.each { |s, fp| autoload(s, "#{__dir__}/base_cli/#{fp}") }
+  # @formatter:on
+
   class << self
     # @abstract
     #
@@ -45,11 +51,14 @@ class Appifier::BaseCli
   protected
 
   # @return [Class<Thor>]
+  # @return [Class<Appifier::BaseCli::Core>]
   def core
+    # noinspection RubyYardReturnMatch
     { instance: self, commands: commands }.yield_self do |params|
-      @core ||= Class.new(Thor) do
+      @core ||= Class.new(params.fetch(:instance).class.const_get(:Core)) do
         no_commands do
           define_method(:runner) { params.fetch(:instance).class.const_get(:Runner).new(options) }
+          self.__send__(:protected, :runner)
         end
       end
     end
