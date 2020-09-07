@@ -12,7 +12,9 @@
   'bin/appifier',
 ].tap do |patterns|
   self.singleton_class.define_method(:files) do
-    patterns.map { |m| Dir.glob(m) }.flatten.keep_if { |f| File.file?(f) }.sort
+    patterns
+      .map { |m| Dir.glob(m) }
+      .flatten.keep_if { |f| File.file?(f) }.sort.uniq
   end
 end
 
@@ -37,7 +39,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = ">= 2.5.0"
   s.require_paths = ["lib"]
   s.files         = [
-    <?rb for file in files.uniq ?>
+    <?rb for file in files ?>
     #{"%s," % quote(file)}
     <?rb end ?>
   ]
