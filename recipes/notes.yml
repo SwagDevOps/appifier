@@ -1,0 +1,58 @@
+# @see https://github.com/nuttyartist/notes/
+#
+# ```.sh
+# export QT_DEBUG_PLUGINS=1
+# notes
+# ```
+# ---
+app: Notes
+
+union: true
+ingredients:
+  dist: trusty
+  sources:
+    - deb http://archive.ubuntu.com/ubuntu/ trusty main universe
+  packages:
+    - libqt4-dbus
+    - qt4-qtconfig
+  script:
+    - set -eux
+    # cleanup --------------------------------------------------------
+    - rm -rf *.gz *.png *.sh VERSION *.part *.deb
+    # script file -----------------------------------------------------
+    - SCRIPT=./ingredients.sh
+    - cat > "${SCRIPT}" << EOF
+    - set -eux
+    # variables ------------------------------------------------------
+    - UBUNTU_DIST=xenial
+    - ARCH=amd64
+    - SHORTNAME=notes
+    - BASE_URL=https://github.com/
+    - RELEASES_URL=https://github.com/nuttyartist/notes/releases
+    # runtime -------------------------------------------------------
+    - URLS=\$(wget --trust-server-names -qO- "\${RELEASES_URL}" | grep -Po 'href=\"\K.*?\.deb(?=\")' | grep -E "\${ARCH}-\${UBUNTU_DIST}\.deb$")
+    - DOWNLOAD_URL=\${BASE_URL}\$(echo "\${URLS}" | head -n1)
+    - VERSION=\$(echo "\${DOWNLOAD_URL}" | grep -Po '_\K([0-9]+\.[0-9]+\.[0-9]+)')
+    - FILE=\$(head -10 /dev/urandom | tr -cd '[:alnum:]' | cut -c -32).part
+    - PACKAGE=\${SHORTNAME}.\${VERSION}.deb
+    # ensure version -------------------------------------------------
+    - test -n "\${VERSION}"
+    # output files ---------------------------------------------------
+    - echo "\${VERSION}" > VERSION
+    - wget --trust-server-names "\${DOWNLOAD_URL}" -O "\${FILE}"
+    - mv "\${FILE}" "\${PACKAGE}"
+    - EOF
+    - /usr/bin/env sh "${SCRIPT}"
+
+script:
+  - set -eux
+
+integration:
+  name: Notes
+  executable: notes
+  desktop:
+    name: notes
+    override:
+      'Desktop Entry':
+        Exec: '{{executable.path}}'
+        Icon: '{{icon.path}}'
