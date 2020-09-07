@@ -3,8 +3,6 @@ app: Molotov
 ingredients:
   script:
     - set -eux
-    - SHORTNAME=molotov
-    - FILE=$(head -10 /dev/urandom | tr -cd '[:alnum:]' | cut -c -32).part
     # cleanup --------------------------------------------------------
     - rm -rf *.gz *.png *.sh VERSION *.part squashfs-root/
     # script file -----------------------------------------------------
