@@ -19,7 +19,8 @@ ingredients:
 script:
   - set -eux
   # files ------------------------------------------------------------
-  - ln -sfvr usr/share/gitkraken/gitkraken.png .
+  - rm -fv *.png *.svg
+  - ln usr/share/gitkraken/gitkraken.png .
   - ln -sfvr usr/share/gitkraken/gitkraken usr/bin/
   # desktop ----------------------------------------------------------
   - cat > gitkraken.desktop << EOF
@@ -27,7 +28,17 @@ script:
   - Type=Application
   - Name=GitKraken
   - Icon=gitkraken
-  - Exec=/usr/bin/gitkraken %U
+  - Exec=gitkraken %U
   - Categories=Development;IDE;
   - Comment=The downright luxurious Git client
   - EOF
+
+integration:
+  name: GitKraken
+  executable: gitkraken
+  desktop:
+    name: gitkraken
+    override:
+      'Desktop Entry':
+        Exec: '{{executable.path}} %U'
+        Icon: '{{icon.path}}'
