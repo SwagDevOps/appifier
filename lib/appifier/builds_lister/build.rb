@@ -34,11 +34,7 @@ class Appifier::BuildsLister::Build
   #
   # @return [Hash{Symbol => Object}]
   def detail
-    {}.tap do |result|
-      instance_variables.sort.map { |v| v.to_s.gsub(/^@/, '') }.each do |attr|
-        result[attr.to_sym] = self.dup.public_send(attr).dup.freeze if respond_to?(attr)
-      end
-    end
+    as_json
   end
 
   def version?
@@ -50,10 +46,6 @@ class Appifier::BuildsLister::Build
   end
 
   alias to_s to_path
-
-  def to_json(*args)
-    detail.to_json(*args)
-  end
 
   protected
 
