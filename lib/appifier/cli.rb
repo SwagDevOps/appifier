@@ -17,31 +17,42 @@ class Appifier::Cli < Appifier::BaseCli
       # @formatter:off
       {
         build: {
-          desc: 'Build',
+          desc: 'Build given recipe',
           options: {
             verbose: {
               default: false,
               type: :boolean,
-              desc: 'Verbose'
+              desc: 'Verbose',
             },
             docker: {
               default: true,
               type: :boolean,
-              desc: 'Docker'
+              desc: 'Docker',
             },
             install: {
               default: false,
               type: :boolean,
-              desc: 'Install'
+              desc: 'Install',
             }
           },
-          method: ->(recipe) { runner.call(:build, recipe) }
+          method: ->(recipe) { runner.call(:build, recipe) },
         },
         config: {
           desc: 'Display config',
           options: {},
-          method: -> { runner.call(:config) }
-        }
+          method: -> { runner.call(:config) },
+        },
+        list: {
+          desc: 'List builds based on app name',
+          options: {
+            detail: {
+              default: false,
+              type: :boolean,
+              desc: 'Show detail',
+            },
+          },
+          method: ->(pattern = nil) { runner.call(:list, pattern) },
+        },
       }
       # @formatter:on
     end

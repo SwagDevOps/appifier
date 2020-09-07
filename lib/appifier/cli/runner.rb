@@ -11,6 +11,7 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
     {
       config: kwargs[:config],
       printer: kwargs[:printer],
+      builds_lister: kwargs[:builds_lister],
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
 
@@ -34,10 +35,25 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
     super.tap { |result| printer.call(result) }
   end
 
+  # @param [String] pattern
+  #
+  # @return [Hash{String => Array}]
+  # @return [Hash{String => Hash}]
+  #
+  # @see https://ruby-doc.org/core-2.1.2/File.html#method-c-fnmatch-3F
+  def list(pattern = nil)
+    builds_lister.call.catalog(with_details: options[:detail]).tap do |catalog|
+      return catalog.keep_if { |k, _| File.fnmatch?(pattern, k) } if pattern
+    end
+  end
+
   protected
 
   # @return [Appifier::JsonPrinter]
   attr_reader :printer
+
+  # @return [Appifier::BuildsLister]
+  attr_reader :builds_lister
 
   class << self
     # Prepare options from given container.
