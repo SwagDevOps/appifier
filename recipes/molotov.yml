@@ -38,7 +38,7 @@ integration:
   name: Molotov
   executable: molotov
   desktop:
-    name: molotov
+    name: Molotov
     override:
       'Desktop Entry':
         Exec: '{{executable.path}} %u'
