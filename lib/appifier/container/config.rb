@@ -22,6 +22,8 @@
       # @formatter:off
     end
   end,
+  uninstaller: -> { Appifier::Uninstaller.new },
+  'uninstaller.lister': -> { Appifier::Uninstaller::Lister.new },
   verbose: false,
   fs: lambda do
     autoload(:FileUtils, 'fileutils')
