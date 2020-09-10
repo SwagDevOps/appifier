@@ -26,6 +26,7 @@ module Appifier
     JsonPrinter: 'json_printer',
     LoggedRunner: 'logged_runner',
     Mixins: 'mixins',
+    Uninstaller: 'uninstaller',
     Shell: 'shell',
     # system ------------------------------------------------------
     Bundled: 'bundled',
