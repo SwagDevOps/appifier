@@ -18,6 +18,7 @@ describe Appifier, :appifier do
     :LoggedRunner,
     :Mixins,
     :Shell,
+    :Uninstaller,
     # system ------------------------------------------------------
     :Bundled,
     :VERSION,
