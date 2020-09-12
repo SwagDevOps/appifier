@@ -43,7 +43,7 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
   # @see https://ruby-doc.org/core-2.1.2/File.html#method-c-fnmatch-3F
   def list(pattern = nil)
     builds_lister.call.catalog(with_details: options[:detail]).tap do |catalog|
-      return catalog.keep_if { |k, _| File.fnmatch?(pattern, k) } if pattern
+      return pattern ? catalog.glob(pattern) : catalog
     end
   end
 
