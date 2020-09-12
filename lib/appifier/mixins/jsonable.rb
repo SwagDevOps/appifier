@@ -10,14 +10,11 @@ autoload(:DeepDup, 'deep_dup')
 module Appifier::Mixins::Jsonable
   # @api private
   module ClassMethods
-    # @api private
-    STORE = :json_variables
-
-    __send__(:define_method, STORE) { instance_variable_get("@#{STORE}".to_sym).dup }
-
-    protected
-
-    attr_writer STORE
+    (STORE = :json_variables).tap do |attr_name|
+      __send__(:define_method, attr_name) { instance_variable_get("@#{attr_name}".to_sym).dup }
+      __send__(:attr_writer, attr_name)
+      __send__(:protected, "#{attr_name}=")
+    end
 
     [:attr_accessor, :attr_reader].each do |method_name|
       module_eval do
@@ -31,6 +28,20 @@ module Appifier::Mixins::Jsonable
             end
           end
         end
+
+        __send__(:protected, method_name)
+      end
+    end
+
+    class << self
+      protected
+
+      def extended(othermod)
+        # Set ``<Class>.json_variables`` to an empty array
+        #
+        # ``<Class>.json_variables`` will be populated with symbols according
+        # to public attributes.
+        super.tap { othermod.__send__("#{self.const_get(:STORE)}=", []) }
       end
     end
   end
@@ -39,10 +50,7 @@ module Appifier::Mixins::Jsonable
     protected
 
     def included(othermod)
-      super.tap do
-        othermod.extend(ClassMethods)
-        othermod.__send__("#{ClassMethods::STORE}=", [])
-      end
+      super.tap { othermod.extend(ClassMethods.dup) }
     end
   end
 
