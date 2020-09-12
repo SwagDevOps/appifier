@@ -7,6 +7,7 @@ module Appifier::Mixins
   # @formatter:off
   {
     Fs: 'fs',
+    HashGlob: 'hash_glob',
     Inject: 'inject',
     Jsonable: 'jsonable',
     Shell: 'shell',

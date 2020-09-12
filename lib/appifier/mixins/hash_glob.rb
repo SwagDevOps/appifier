@@ -1,0 +1,26 @@
+# frozen_string_literal: true
+
+require_relative '../mixins'
+
+# Mixin appliable on Hash (or any Hashlike with #keep_if interface method).
+#
+# Case insensitive + { } is supported (EXTGLOB)
+#
+# @see https://ruby-doc.org/core-2.5.0/File.html#method-c-fnmatch
+module Appifier::Mixins::HashGlob
+  # @param [String, Array<String>] pattern
+  #
+  # @return [Hash]
+  # @return [Appifier::Mixins::HashGlob]
+  def glob(pattern)
+    keep_if do |k, _|
+      lambda do
+        false.tap do
+          (pattern.is_a?(Array) ? pattern : [pattern]).each do |matchable|
+            return true if File.fnmatch?(matchable, k, ::File::FNM_CASEFOLD | ::File::FNM_EXTGLOB)
+          end
+        end
+      end.call
+    end.tap { |h| h.singleton_class.__send__(:include, Appifier::Mixins::HashGlob) }
+  end
+end
