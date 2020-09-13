@@ -58,7 +58,7 @@ module Appifier::Mixins::Jsonable
   def as_json(*)
     {}.tap do |serialized|
       self.class.__send__(ClassMethods::STORE).each do |attr|
-        serialized[attr.to_sym] = DeepDup.deep_dup(self.public_send(attr))
+        serialized[attr.to_sym] = public_send(attr).yield_self { |v| DeepDup.deep_dup(v) }
       end
     end
   end
