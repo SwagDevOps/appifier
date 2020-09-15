@@ -12,8 +12,10 @@ class Appifier::Uninstaller::Lister
     inject(config: kwargs[:config]).assert { !values.include?(nil) }
   end
 
+  # @return [Hash{String => Array<Pathname>}]
+  # @return [Appifier::Mixins::HashGlob]
   def call
-    index
+    index.tap { |h| h.singleton_class.__send__(:include, Appifier::Mixins::HashGlob) }
   end
 
   protected
