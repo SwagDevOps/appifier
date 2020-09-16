@@ -20,6 +20,7 @@ module Appifier
     Config: 'config',
     Container: 'container',
     DownloadableString: 'downloadable_string',
+    FileSystem: 'file_system',
     Recipe: 'recipe',
     Scripts: 'scripts',
     Integration: 'integration',
