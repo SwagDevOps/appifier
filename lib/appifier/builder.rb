@@ -8,9 +8,7 @@ autoload(:Open3, 'open3')
 
 # Builder
 class Appifier::Builder
-  include(Appifier::Mixins::Fs)
   include(Appifier::Mixins::Inject)
-  include(Appifier::Mixins::Verbose)
 
   # @return [Appifier::Recipe]
   attr_reader :recipe
@@ -23,6 +21,7 @@ class Appifier::Builder
     # @formatter:off
     {
       config: kwargs[:config],
+      fs: kwargs[:fs],
       lister: [kwargs[:lister], :builds_lister],
       scripts_runner: [kwargs[:scripts_runner], :'build.scripts_runner'],
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
@@ -38,14 +37,24 @@ class Appifier::Builder
 
   # Return an array of created files.
   #
-  # @return [Array<Pathname>]
-  def call
+  # @return [Appifier::BuildLister::Build]
+  # @return [Array<Pathname>] when installable
+  def call # rubocop:disable Metrics/MethodLength
     build
 
-    [builds.last].yield_self do |builds|
-      (installable? ? Appifier::Integration.new(builds.fetch(0), recipe: recipe).call : []).yield_self do |files|
-        builds.concat(files).map { |fp| Pathname.new(fp) }.sort.uniq
-      end
+    # noinspection RubyYardReturnMatch
+    builds.last.yield_self do |last_build|
+      # noinspection RubyNilAnalysis
+      # @formatter:off
+      {
+        false => -> { last_build },
+        true => lambda do
+                  [last_build]
+                    .concat(Appifier::Integration.new(last_build, recipe: recipe).call)
+                    .map { |fp| Pathname.new(fp) }.sort.uniq
+                end
+      }.fetch(installable?).call
+      # @formatter:on
     end
   end
 
@@ -63,16 +72,6 @@ class Appifier::Builder
     @installable
   end
 
-  # @return [Pathname|Object]
-  def build_dir(&block)
-    tmpdir.tap do |dir|
-      if block
-        fs.mkdir_p(dir) unless dir.exist?
-        return Dir.chdir(dir.realpath) { block.call }
-      end
-    end
-  end
-
   # Target used during build.
   #
   # Differs depending on docker or raw script execution:
@@ -84,6 +83,10 @@ class Appifier::Builder
   end
 
   protected
+
+  # @return [Appifier::FileSystem]
+  # @return [FileUtils]
+  attr_reader :fs
 
   # @return [Appifier::Config]
   attr_reader :config
@@ -107,11 +110,12 @@ class Appifier::Builder
 
   # Get list of builds (through lister) for current app.
   #
-  # @return [Array<Pathname>]
+  # @raise [KeyError]
+  #
+  # @return [Array<Appifier::BuildsLister::Build>]
   def builds
-    recipe.to_h.fetch('app').yield_self do |app_name|
-      lister.call.fetch(app_name).map { |build| Pathname.new(build.path) }
-    end
+    # noinspection RubyYardReturnMatch
+    recipe.to_h.fetch('app').yield_self { |app_name| lister.call.fetch(app_name) }
   end
 
   def build
@@ -122,6 +126,16 @@ class Appifier::Builder
       end
 
       scripts_runner.call(target, docker: docker?)
+    end
+  end
+
+  # @return [Pathname|Object]
+  def build_dir(&block)
+    tmpdir.tap do |dir|
+      if block
+        fs.mkdir_p(dir) unless dir.exist?
+        return Dir.chdir(dir.realpath) { block.call }
+      end
     end
   end
 end
