@@ -103,7 +103,7 @@ class Appifier::FileSystem
       # @formatter:off
       [
         Module.public_methods,
-        instance.methods.concat,
+        instance.methods,
         instance.private_methods,
       ].flatten.yield_self { |methods| mod.public_methods - methods }.sort
       # @formatter:on
