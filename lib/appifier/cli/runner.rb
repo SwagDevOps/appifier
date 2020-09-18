@@ -12,6 +12,7 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
       config: kwargs[:config],
       printer: kwargs[:printer],
       builds_lister: kwargs[:builds_lister],
+      uninstaller: kwargs[:uninstaller],
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
 
@@ -47,6 +48,10 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
     end
   end
 
+  def uninstall(pattern = nil)
+    uninstaller.call(pattern)
+  end
+
   protected
 
   # @return [Appifier::JsonPrinter]
@@ -54,6 +59,9 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
 
   # @return [Appifier::BuildsLister]
   attr_reader :builds_lister
+
+  # @return [Appifier::Uninstaller]
+  attr_reader :uninstaller
 
   class << self
     # Prepare options from given container.

@@ -53,6 +53,11 @@ class Appifier::Cli < Appifier::BaseCli
           },
           method: ->(pattern = nil) { runner.call(:list, pattern) },
         },
+        uninstall: {
+          desc: 'Uninstall',
+          options: {},
+          method: ->(pattern) { runner.call(:uninstall, pattern) },
+        },
       }
       # @formatter:on
     end
