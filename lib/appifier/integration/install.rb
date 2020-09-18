@@ -8,7 +8,6 @@ autoload(:SecureRandom, 'securerandom')
 class Appifier::Integration::Install
   autoload(:DesktopBuilder, "#{__dir__}/install/desktop_builder")
 
-  include(Appifier::Mixins::Fs)
   include(Appifier::Mixins::Inject)
 
   # rubocop:disable Metrics/AbcSize
@@ -17,6 +16,7 @@ class Appifier::Integration::Install
     # @formatter:off
     {
       config: kwargs[:config],
+      fs: kwargs[:fs],
       logged_runner: kwargs[:logged_runner],
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
@@ -71,7 +71,12 @@ class Appifier::Integration::Install
   # @return [Pathname]
   attr_reader :backup
 
+  # @return [Hash]
+  # @return [Appifier::Config]
   attr_reader :config
+
+  # @return [Appifier::FileSystem]
+  attr_reader :fs
 
   # @return [Appifier::LoggedRunner]
   attr_reader :logged_runner
