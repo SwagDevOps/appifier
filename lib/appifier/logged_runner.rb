@@ -5,17 +5,23 @@ autoload(:Pathname, 'pathname')
 
 # Provide a shell context collecting outputs into files.
 class Appifier::LoggedRunner
-  include(Appifier::Mixins::Fs)
+  include(Appifier::Mixins::Inject)
   include(Appifier::Mixins::Shell)
 
   # @return [String]
   attr_reader :mode
 
   # @param [String] directory
-  def initialize(directory, env: {})
+  def initialize(directory, env: {}, **kwargs)
     @directory = Pathname.new(directory).freeze
     @env = env.to_h.transform_values(&:freeze).freeze
     @mode = 'a'
+
+    # @formatter:off
+    {
+      fs: kwargs[:fs],
+    }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
+    # @formatter:on
   end
 
   # Call commands and collect logs by given names.
@@ -46,6 +52,10 @@ class Appifier::LoggedRunner
 
   # @return [Hash{String => String}]
   attr_reader :env
+
+  # @return [Appifier::FileSystem]
+  # @return [FileUtils]
+  attr_reader :fs
 
   def prepare(name, &block)
     self.tap do
