@@ -58,13 +58,13 @@ class Appifier::FileSystem
     #
     # @api private
     #
-    # @param [Symbol] type in ``[nil, :base, :verbose, :dry_run, no_write]``
+    # @param [Symbol] type in ``[nil, :default, :verbose, :dry_run, no_write]``
     # @param [Object] instance
     #
     # @return [Module]
     def apply(type, instance)
-      types.fetch(type).tap do |mod|
-        (mod.public_methods - Module.public_methods - (instance.methods + instance.private_methods)).sort.tap do |methods| # rubocop:disable Layout/LineLength
+      types.fetch(type || :default).tap do |mod|
+        methods_sub(mod, instance).tap do |methods|
           instance.singleton_class.__send__(:include, mod)
 
           methods.each do |m|
@@ -83,12 +83,29 @@ class Appifier::FileSystem
     def types
       # @formatter:off
       {
-        nil => ::FileUtils,
-        base: ::FileUtils,
+        default: ::FileUtils,
         verbose: ::FileUtils::Verbose,
         dry_run: ::FileUtils::DryRun,
         no_write: ::FileUtils::NoWrite,
       }
+      # @formatter:on
+    end
+
+    # Get relevant methods from given module
+    #
+    # @api private
+    #
+    # @param [Module<FileUtils>] mod
+    # @param [Object] instance
+    #
+    # @return [Array<Symbol>]
+    def methods_sub(mod, instance)
+      # @formatter:off
+      [
+        Module.public_methods,
+        instance.methods.concat,
+        instance.private_methods,
+      ].flatten.yield_self { |methods| mod.public_methods - methods }.sort
       # @formatter:on
     end
   end
