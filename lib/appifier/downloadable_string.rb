@@ -8,10 +8,16 @@ autoload(:Pathname, 'pathname')
 #
 # @abstract
 class Appifier::DownloadableString < String
-  include(Appifier::Mixins::Fs)
+  include(Appifier::Mixins::Inject)
   include(Appifier::Mixins::Verbose)
 
-  def initialize
+  def initialize(**kwargs)
+    # @formatter:off
+    {
+      fs: kwargs[:fs],
+    }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
+    # @formatter:on
+
     self.class.__send__(:fetch, self.url, verbose: verbose?).tap { |s| super(s) }
   end
 
@@ -36,8 +42,6 @@ class Appifier::DownloadableString < String
     def replacements
       {}
     end
-
-    protected
 
     # Fetch given url to string.
     #
@@ -82,4 +86,10 @@ class Appifier::DownloadableString < String
       fs.chmod(0o755, f) if executable?
     end
   end
+
+  protected
+
+  # @return [Appifier::FileSystem]
+  # @return [FileUtils]
+  attr_reader :fs
 end
