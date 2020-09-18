@@ -11,6 +11,7 @@ describe Appifier, :appifier do
     :Config,
     :Container,
     :DownloadableString,
+    :FileSystem,
     :Recipe,
     :Scripts,
     :Integration,
