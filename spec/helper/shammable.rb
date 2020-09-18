@@ -33,6 +33,9 @@ module Shammable
         # self.const_get(:Config)
         Config.instance.freeze[:path].join("#{name}.rb").read.yield_self do |content|
           instance_eval(content).yield_self { |v| Struct.new(*v.keys).new(*v.values) }
+        rescue Exception # rubocop:disable Lint/RescueException
+          [content, '-' * 70, instance_eval(content).inspect].join("\n").tap { |s| warn(s) }
+          raise
         end
       end.call
     end.fetch(name.to_sym)
