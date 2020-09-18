@@ -17,6 +17,7 @@ class Appifier::Uninstaller
   def initialize(**kwargs)
     # @formatter:off
     {
+      fs: kwargs[:fs],
       lister: [kwargs[:lister], :'uninstaller.lister']
     }.tap do |injection|
       inject(**injection).assert { !values.include?(nil) }
@@ -24,10 +25,17 @@ class Appifier::Uninstaller
     # @formatter:on
   end
 
-  def call(name)
+  def call(pattern)
     # @todo actual implementation
-    # lister.call.tap { |res| pp(res) }
+    lister.call.glob(pattern) { |res| pp(res) }
   end
 
+  protected
+
+  # @return [Appifier::FileSystem]
+  # @return [FileUtils]
+  attr_reader :fs
+
+  # @return [Appifier::Uninstaller::Lister]
   attr_reader :lister
 end
