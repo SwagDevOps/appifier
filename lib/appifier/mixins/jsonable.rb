@@ -11,7 +11,7 @@ module Appifier::Mixins::Jsonable
   # @api private
   module ClassMethods
     (STORE = :json_variables).tap do |attr_name|
-      __send__(:define_method, attr_name) { instance_variable_get("@#{attr_name}".to_sym).dup }
+      __send__(:define_method, attr_name) { instance_variable_get("@#{attr_name}".to_sym).dup.sort }
       __send__(:attr_writer, attr_name)
       __send__(:protected, "#{attr_name}=")
     end
