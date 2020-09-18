@@ -3,6 +3,7 @@
 # @formatter:off
 {
   config: -> { Appifier::Config.new },
+  fs: -> { Appifier::FileSystem.new(self[:verbose] ? :verbose : :default) },
   builds_lister: lambda do
     self[:config].fetch('cache_dir').join('out').yield_self do |builds_dir|
       Appifier::BuildsLister.new(builds_dir)
@@ -25,11 +26,6 @@
   uninstaller: -> { Appifier::Uninstaller.new },
   'uninstaller.lister': -> { Appifier::Uninstaller::Lister.new },
   verbose: false,
-  fs: lambda do
-    autoload(:FileUtils, 'fileutils')
-
-    self[:verbose] ? FileUtils::Verbose : FileUtils
-  end,
   printer: -> { Appifier::JsonPrinter.new },
   shell: -> { Appifier::Shell.new(verbose: self[:verbose]) },
   template: lambda do
