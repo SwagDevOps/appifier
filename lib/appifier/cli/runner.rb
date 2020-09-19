@@ -13,12 +13,12 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
       printer: kwargs[:printer],
       builds_lister: kwargs[:builds_lister],
       uninstaller: kwargs[:uninstaller],
-    }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
-    # @formatter:on
-
-    (kwargs[:container] || Appifier.container).yield_self do |container|
-      super(self.class.__send__(:optionize, container, options)).tap { container.freeze }
+    }.yield_self { |injection| inject(options, **injection) }.tap do |injection|
+      injection.container.freeze
+      injection.result.assert { !values.include?(nil) }
+      super(injection.options)
     end
+    # @formatter:on
   end
 
   # @return [Appifier::Config]
@@ -63,7 +63,42 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
   # @return [Appifier::Uninstaller]
   attr_reader :uninstaller
 
+  # Process injection with given options.
+  #
+  # @param [Hash{String => Object}] options
+  #
+  # @return [Struct]
+  def inject(options, **definition)
+    (definition[:container] || Appifier.container).yield_self do |container|
+      # @formatter:off
+      {
+        container: container,
+        options: self.class.__send__(:optionize, container, options),
+        result: super(**definition)
+      }.yield_self { |h| Struct.new(*h.keys).new(*h.values) }
+      # @formatter:on
+    end
+  end
+
   class << self
+    protected
+
+    # Get options stored on container
+    #
+    # k: options key, v: container key
+    #
+    # @api private
+    #
+    # @return [Hash{Symbol => Symbol}]
+    def container_options
+      # @formatter:off
+      {
+        verbose: :verbose,
+        dry_run: :dry_run,
+      }
+      # @formatter:on
+    end
+
     # Prepare options from given container.
     #
     # Pass some options from options to container values,
@@ -79,14 +114,16 @@ class Appifier::Cli::Runner < Appifier::BaseCli::Runner
         return options if container.frozen?
 
         # noinspection RubyScope
-        options.transform_keys(&:to_sym).dup.tap do |options| # rubocop:disable Lint/ShadowingOuterLocalVariable
+        # rubocop:disable Lint/ShadowingOuterLocalVariable
+        options.transform_keys(&:to_sym).dup.tap do |options|
           # k: options key, v: container key
-          { verbose: :verbose }.each do |k, v|
+          container_options.each do |k, v|
             next unless options.key?(k)
 
             -> { options.delete(k) }.tap { container[v] = options[k] }.call
           end
         end
+        # rubocop:enable Lint/ShadowingOuterLocalVariable
       end.call.freeze
     end
   end
