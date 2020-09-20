@@ -2,9 +2,11 @@
 
 require_relative '../appifier'
 
-# List builds.
+# Uninstaller
 #
-# Builds are indexed by name and sorted by mtime.
+# Installations are retrievd by symlinks pointing to application directory.
+#
+# @see Appifier::Uninstaller::Lister
 class Appifier::Uninstaller
   # @formatter:off
   {
@@ -25,6 +27,10 @@ class Appifier::Uninstaller
     # @formatter:on
   end
 
+  # @param [String] pattern
+  #
+  # @return [Hash{String => Array}]
+  # @return [Hash]
   def call(pattern)
     lister.call.glob(pattern).tap do |result|
       result.map { |_, v| v }.flatten.each do |fp|
