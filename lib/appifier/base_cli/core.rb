@@ -15,17 +15,20 @@ class Appifier::BaseCli::Core < Thor
 
     def start(given_args = ARGV, config = {})
       config[:shell] ||= Thor::Base.shell.new
-      dispatch(nil, given_args.dup, nil, config)
-    rescue Thor::UndefinedCommandError => e
-      ErrorHandler.new(config).call(e, retcode: Errno::EINVAL::Errno)
-    rescue Thor::Error => e
-      ErrorHandler.new(config).call(e)
-    rescue Errno::EPIPE
-      # This happens if a thor command is piped to something like `head`,
-      # which closes the pipe when it's done reading. This will also
-      # mean that if the pipe is closed, further unnecessary
-      # computation will not occur.
-      exit(true)
+
+      ErrorHandler.new(config.dup, exit_on_failure: self.exit_on_failure?).freeze.yield_self do |error_handler|
+        dispatch(nil, given_args.dup, nil, config)
+      rescue Thor::UndefinedCommandError => e
+        error_handler.call(e, retcode: Errno::EINVAL::Errno)
+      rescue Thor::Error => e
+        error_handler.call(e)
+      rescue Errno::EPIPE
+        # This happens if a thor command is piped to something like `head`,
+        # which closes the pipe when it's done reading. This will also
+        # mean that if the pipe is closed, further unnecessary
+        # computation will not occur.
+        exit(true)
+      end
     end
   end
 
