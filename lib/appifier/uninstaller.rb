@@ -26,8 +26,11 @@ class Appifier::Uninstaller
   end
 
   def call(pattern)
-    # @todo actual implementation
-    lister.call.glob(pattern) { |res| pp(res) }
+    lister.call.glob(pattern).tap do |result|
+      result.map { |_, v| v }.flatten.each do |fp|
+        fs.public_send("rm_#{fp.directory? ? :r : nil}f", fp)
+      end
+    end
   end
 
   protected
