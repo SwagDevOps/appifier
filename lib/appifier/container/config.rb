@@ -2,8 +2,15 @@
 
 # @formatter:off
 {
+  verbose: false,
+  dry_run: false,
   config: -> { Appifier::Config.new },
-  fs: -> { Appifier::FileSystem.new(self[:verbose] ? :verbose : :default) },
+  fs: lambda do
+    {
+      false => Appifier::FileSystem.new(self[:verbose] ? :verbose : :default),
+      true => Appifier::FileSystem.new(:dry_run)
+    }.fetch(self[:dry_run])
+  end,
   builds_lister: lambda do
     self[:config].fetch('cache_dir').join('out').yield_self do |builds_dir|
       Appifier::BuildsLister.new(builds_dir)
@@ -25,7 +32,6 @@
   end,
   uninstaller: -> { Appifier::Uninstaller.new },
   'uninstaller.lister': -> { Appifier::Uninstaller::Lister.new },
-  verbose: false,
   printer: -> { Appifier::JsonPrinter.new },
   shell: -> { Appifier::Shell.new(verbose: self[:verbose]) },
   template: lambda do
