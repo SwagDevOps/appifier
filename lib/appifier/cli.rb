@@ -12,6 +12,24 @@ require_relative '../appifier'
 #
 # @see Appifier::Cli::Runner
 class Appifier::Cli < Appifier::BaseCli
+  # Recurrent options.
+  #
+  # @api private
+  # @todo use a more meaningful name
+  OPTIONS = { # @formatter:off
+    dry_run: {
+      default: false,
+      type: :boolean,
+      desc: 'Never change files/directories, with printing message before acting',
+    }.freeze,
+    verbose: {
+      default: false,
+      type: :boolean,
+      desc: 'Output messages before acting',
+    }.freeze,
+  }.freeze
+  # @formatter:on
+
   class << self
     def commands # rubocop:disable Metrics/MethodLength:
       # @formatter:off
@@ -19,11 +37,7 @@ class Appifier::Cli < Appifier::BaseCli
         build: {
           desc: 'Build given recipe',
           options: {
-            verbose: {
-              default: false,
-              type: :boolean,
-              desc: 'Verbose',
-            },
+            verbose: OPTIONS.fetch(:verbose),
             docker: {
               default: true,
               type: :boolean,
@@ -55,7 +69,10 @@ class Appifier::Cli < Appifier::BaseCli
         },
         uninstall: {
           desc: 'Uninstall',
-          options: {},
+          options: {
+            verbose: OPTIONS.fetch(:verbose),
+            dry_run: OPTIONS.fetch(:dry_run),
+          },
           method: ->(pattern) { runner.call(:uninstall, pattern) },
         },
       }
