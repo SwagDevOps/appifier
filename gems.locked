@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/SwagDevOps/kamaze-project.git
-  revision: bcd8d41048cfd5755459707da1731280a9678861
+  revision: 8fbcdaad6894e0daa17a34546f1ad92c6b064ae6
   branch: develop
   specs:
     kamaze-project (1.1.0)
@@ -63,7 +63,7 @@ GEM
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     redcarpet (3.5.0)
-    regexp_parser (1.7.1)
+    regexp_parser (1.8.0)
     rexml (3.2.4)
     rouge (3.23.0)
     rspec (3.9.0)
