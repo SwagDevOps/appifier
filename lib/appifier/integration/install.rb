@@ -5,7 +5,7 @@ autoload(:Pathname, 'pathname')
 autoload(:SecureRandom, 'securerandom')
 
 # Describe an install, from a given source to a given directory (target).
-class Appifier::Integration::Install
+class Appifier::Integration::Install # rubocop:disable Metrics/ClassLength
   autoload(:DesktopBuilder, "#{__dir__}/install/desktop_builder")
 
   include(Appifier::Mixins::Inject)
@@ -28,6 +28,7 @@ class Appifier::Integration::Install
     # set extraction ----------------------------------------------------------
     @extraction = Appifier::Integration::Extraction.new(source, name: parameters.fetch('logname'))
   end
+
   # rubocop:enable Metrics/AbcSize
 
   # Extracted files path.
@@ -36,7 +37,7 @@ class Appifier::Integration::Install
   attr_reader :extraction
 
   # @return [Array<Pathname>]
-  def call
+  def call # rubocop:disable Metrics/MethodLength
     # noinspection RubyYardReturnMatch
     prepared do |dir|
       # @formatter:off
@@ -48,7 +49,10 @@ class Appifier::Integration::Install
         symlimk_executable(dir),
       ].flatten.compact
       # @formatter:on
-    end.tap { clean }
+    end.tap do
+      update_desktop_database
+      clean
+    end
   end
 
   protected
@@ -96,6 +100,7 @@ class Appifier::Integration::Install
       end
     end
   end
+
   # rubocop:enable Metrics/AbcSize
 
   def clean
@@ -127,6 +132,7 @@ class Appifier::Integration::Install
       [icon_link, icon_link.realpath].map(&:freeze).freeze
     end
   end
+
   # rubocop:enable Metrics/AbcSize
 
   # Apply given icon on given directory.
@@ -165,6 +171,7 @@ class Appifier::Integration::Install
       end
     end
   end
+
   # rubocop:enable Metrics/AbcSize
 
   # @return [Array<Pathname>]
@@ -175,6 +182,14 @@ class Appifier::Integration::Install
       [dir.join('app'), target_dir.join(parameters.fetch('executable'))].tap do |result|
         fs.ln_sf(*result)
       end
+    end
+  end
+
+  def update_desktop_database
+    ['update-desktop-database', '-q', config.fetch('desktops_dir').to_s].yield_self do |command|
+      logged_runner.call(parameters.fetch('logname') => [command])
+    rescue Exception => e # rubocop:disable Lint/RescueException
+      warn(e)
     end
   end
 end
