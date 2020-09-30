@@ -1,0 +1,39 @@
+app: Slack
+
+ingredients:
+  script:
+    - set -eux
+    # cleanup ---------------------------------------------------------
+    - rm -rf *.gz *.svg *.sh VERSION *.part squashfs-root/ releases
+    # script file -----------------------------------------------------
+    - SCRIPT=./ingredients.sh
+    - cat > "${SCRIPT}" << EOF
+    - set -eux
+    - # variables -----------------------------------------------------
+    - SHORTNAME=slack
+    - RELEASES_URL='https://slack.com/intl/en/release-notes/linux'
+    - PLATFORM=\$(uname -i)
+    - DLD_URL_PATTERN='https://downloads.slack-edge.com/linux_releases/slack-desktop-%s-amd64.deb'
+    - FILE=\$(head -10 /dev/urandom | tr -cd '[:alnum:]' | cut -c -32).part
+    - # computed variables --------------------------------------------
+    - RELEASES=\$(wget --trust-server-names -qO- "\${RELEASES_URL}" | xmllint  --html --xpath 'string(//h2)' - | sed 's/Slack //g')
+    - echo "\$RELEASES" > releases # only one version with ubuntu:trusty
+    - VERSION=\$(head -1 releases | sed 's/-/_/g')
+    - echo "\${VERSION}" | grep -E '^[0-9]+' # ensure version
+    - DLD_URL=\$(printf "\${DLD_URL_PATTERN}" "\${VERSION}")
+    - # output files --------------------------------------------------
+    - echo "\${VERSION}" > VERSION
+    - wget --trust-server-names "\${DLD_URL}" -O "\${FILE}"
+    - mv -v "\${FILE}" "\${SHORTNAME}.\${VERSION}.deb"
+    - EOF
+    - /usr/bin/env sh "${SCRIPT}"
+
+integration:
+  name: Slack
+  executable: slack
+  desktop:
+    name: slack
+    override:
+      'Desktop Entry':
+        Exec: '{{executable.path}} %U'
+        Icon: '{{icon.path}}'
