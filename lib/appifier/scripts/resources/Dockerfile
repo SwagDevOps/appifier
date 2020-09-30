@@ -18,8 +18,10 @@ RUN set -eux ;\
     apt-get update ;\
     apt-get install -y --no-install-recommends \
         imagemagick \
+        libxml2-utils \
         apt-transport-https libcurl3-gnutls libarchive13 wget curl \
-        desktop-file-utils aria2 fuse gnupg2 build-essential file libglib2.0-bin \
+        desktop-file-utils aria2 fuse gnupg2 build-essential file \
+        libglib2.0-bin \
         git jq unzip ;\
     # test user ---------------------------------------------------------------
     useradd --system --no-user-group --uid 1000 test ;\
