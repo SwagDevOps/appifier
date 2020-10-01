@@ -19,10 +19,11 @@ class Appifier::BuildsLister::Build
   # @return [Pathname]
   attr_reader :path
 
+  # @param [String] path
   def initialize(path)
     self.tap do
       @path = Pathname.new(path).freeze
-      @mtime = File.mtime(self.path)
+      @mtime = self.class.__send__(:mtime, path).freeze
       extract.tap do |v|
         @name = v.name
         @version = v.version
@@ -37,8 +38,18 @@ class Appifier::BuildsLister::Build
     as_json
   end
 
+  # Denote version is defined (not null).
+  #
+  # @return [Boolean]
   def version?
     !version.nil?
+  end
+
+  # Denote file exists.
+  #
+  # @return [Boolean]
+  def exist?
+    path.exist?
   end
 
   def to_path
@@ -68,8 +79,21 @@ class Appifier::BuildsLister::Build
       return result_struct.new(nil, nil) unless extractable?
 
       to_s.scan(version_matcher).to_a.fetch(0).yield_self do |r|
-        result_struct.new(r.fetch(0), r[1].to_s.empty? ? nil : r[1].to_s)
+        result_struct.new(r.fetch(0).freeze, (r[1].to_s.empty? ? nil : r[1].to_s).freeze)
       end
+    end
+  end
+
+  class << self
+    # @api private
+    #
+    # @param [String] path
+    #
+    # @return [Time, nil]
+    def mtime(path)
+      File.mtime(path)
+    rescue Errno::ENOENT
+      nil
     end
   end
 end
