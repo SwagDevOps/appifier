@@ -6,7 +6,6 @@ autoload(:Pathname, 'pathname')
 # Provide a shell context collecting outputs into files.
 class Appifier::LoggedRunner
   include(Appifier::Mixins::Inject)
-  include(Appifier::Mixins::Shell)
 
   # @return [String]
   attr_reader :mode
@@ -20,6 +19,7 @@ class Appifier::LoggedRunner
     # @formatter:off
     {
       fs: kwargs[:fs],
+      shell: kwargs[:shell],
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
   end
@@ -38,7 +38,7 @@ class Appifier::LoggedRunner
       prepare(name) do
         logs_for(name).transform_values { |v| File.open(v, self.mode) }.tap do |options|
           commands.each do |command|
-            sh(*[env].concat(command).concat([options]))
+            shell.sh(*[env].concat(command).concat([options]))
           end
         end
       end
@@ -56,6 +56,9 @@ class Appifier::LoggedRunner
   # @return [Appifier::FileSystem]
   # @return [FileUtils]
   attr_reader :fs
+
+  # @return [Appifier::Shell]
+  attr_reader :shell
 
   def prepare(name, &block)
     self.tap do
