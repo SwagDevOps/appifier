@@ -22,7 +22,7 @@ class Appifier::Integration::Extraction < Pathname
   attr_reader :extractables
 
   def initialize(source, name:, **kwargs)
-    inject({ logged_runner: kwargs[:logged_runner] }).assert { !values.include?(nil) }
+    inject(**{ logged_runner: kwargs[:logged_runner] }).assert { !values.include?(nil) }
 
     @name = name.to_s
     @source = Pathname.new(source).realpath.freeze
