@@ -5,17 +5,16 @@ autoload(:Pathname, 'pathname')
 autoload(:SecureRandom, 'securerandom')
 
 # Describe an install, from a given source to a given directory (target).
-class Appifier::Integration::Install # rubocop:disable Metrics/ClassLength
+class Appifier::Integration::Install
   autoload(:DesktopBuilder, "#{__dir__}/install/desktop_builder")
 
   include(Appifier::Mixins::Inject)
 
-  # rubocop:disable Metrics/AbcSize
-
-  def initialize(source, target, parameters:, **kwargs)
+  def initialize(source, target, parameters:, **kwargs) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     # @formatter:off
     {
       config: kwargs[:config],
+      desktop_database_updater: kwargs[:desktop_database_updater],
       fs: kwargs[:fs],
       logged_runner: kwargs[:logged_runner],
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
@@ -29,30 +28,17 @@ class Appifier::Integration::Install # rubocop:disable Metrics/ClassLength
     @extraction = Appifier::Integration::Extraction.new(source, name: parameters.fetch('logname'))
   end
 
-  # rubocop:enable Metrics/AbcSize
-
   # Extracted files path.
   #
   # @return [Extraction]
   attr_reader :extraction
 
   # @return [Array<Pathname>]
-  def call # rubocop:disable Metrics/MethodLength
-    # noinspection RubyYardReturnMatch
-    prepared do |dir|
-      # @formatter:off
-      [
-        make_desktop(dir),
-        make_icon(dir),
-        make_executable(dir, source),
-        symlimk_desktop(dir),
-        symlimk_executable(dir),
-      ].flatten.compact
-      # @formatter:on
-    end.tap do
-      update_desktop_database
+  def call
+    prepared { |dir| install(dir) }.tap do
+      desktop_database_updater.call(logname: parameters.fetch('logname'))
       clean
-    end
+    end.flatten.compact
   end
 
   protected
@@ -85,6 +71,9 @@ class Appifier::Integration::Install # rubocop:disable Metrics/ClassLength
   # @return [Appifier::LoggedRunner]
   attr_reader :logged_runner
 
+  # @return [Appifier::DesktopDatabaseUpdater]
+  attr_reader :desktop_database_updater
+
   # rubocop:disable Metrics/AbcSize
 
   def prepared(&block)
@@ -105,6 +94,21 @@ class Appifier::Integration::Install # rubocop:disable Metrics/ClassLength
 
   def clean
     extraction&.tap { |dir| fs.rm_rf(dir) }
+  end
+
+  # @param [String] dir
+  #
+  # @return [Array<Pathname>]
+  def install(dir)
+    # @formatter:off
+    [
+      make_desktop(dir),
+      make_icon(dir),
+      make_executable(dir, source),
+      symlimk_desktop(dir),
+      symlimk_executable(dir),
+    ]
+    # @formatter:on
   end
 
   def make_executable(dir, executable)
@@ -182,14 +186,6 @@ class Appifier::Integration::Install # rubocop:disable Metrics/ClassLength
       [dir.join('app'), target_dir.join(parameters.fetch('executable'))].tap do |result|
         fs.ln_sf(*result)
       end
-    end
-  end
-
-  def update_desktop_database
-    ['update-desktop-database', '-q', config.fetch('desktops_dir').to_s].yield_self do |command|
-      logged_runner.call(parameters.fetch('logname') => [command])
-    rescue Exception => e # rubocop:disable Lint/RescueException
-      warn(e)
     end
   end
 end
