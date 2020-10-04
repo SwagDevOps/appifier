@@ -7,7 +7,11 @@ end
 
 # instance ----------------------------------------------------------
 describe Appifier::BuildsLister::Build, :'appifier/builds_lister/build' do # rubocop:disable Metrics/BlockLength
-  let(:subject) { described_class.new('/tmp/App-4.2.2.glibc2.16-x86_64.AppImage') }
+  let(:subject) do
+    sham!(:build_files).randomizer.call.yield_self do |fp|
+      described_class.new(fp)
+    end
+  end
 
   it { expect(subject).to be_a(Appifier::Mixins::Jsonable) }
 
