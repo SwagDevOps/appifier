@@ -5,6 +5,7 @@
   verbose: false,
   dry_run: false,
   config: -> { Appifier::Config.new },
+  desktop_database_updater: -> { Appifier::DesktopDatabaseUpdater.new },
   fs: lambda do
     {
       false => Appifier::FileSystem.new(self[:verbose] ? :verbose : :default),
