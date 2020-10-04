@@ -20,7 +20,8 @@ class Appifier::Uninstaller
     # @formatter:off
     {
       fs: kwargs[:fs],
-      lister: [kwargs[:lister], :'uninstaller.lister']
+      lister: [kwargs[:lister], :'uninstaller.lister'],
+      desktop_database_updater: kwargs[:desktop_database_updater],
     }.tap do |injection|
       inject(**injection).assert { !values.include?(nil) }
     end
@@ -37,6 +38,8 @@ class Appifier::Uninstaller
         fs.public_send("rm_#{fp.directory? ? :r : nil}f", fp)
       end
     end.tap do |result|
+      desktop_database_updater.call unless result.empty?
+
       return nil if result.empty?
     end
   end
@@ -49,4 +52,7 @@ class Appifier::Uninstaller
 
   # @return [Appifier::Uninstaller::Lister]
   attr_reader :lister
+
+  # @return [Appifier::DesktopDatabaseUpdater]
+  attr_reader :desktop_database_updater
 end
