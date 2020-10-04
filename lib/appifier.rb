@@ -19,6 +19,7 @@ module Appifier
     Cli: 'cli',
     Config: 'config',
     Container: 'container',
+    DesktopDatabaseUpdater: 'desktop_database_updater',
     DownloadableString: 'downloadable_string',
     FileSystem: 'file_system',
     Recipe: 'recipe',
