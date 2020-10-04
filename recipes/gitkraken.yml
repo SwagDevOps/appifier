@@ -14,14 +14,15 @@ ingredients:
     # download -------------------------------------------------------
     - wget -c "${PACKAGE_URL}" -O "${FILE}"
     # version --------------------------------------------------------
-    - dpkg -I "${FILE}" | awk '/^\s*Version:\s+/{print $2}' > VERSION
+    - dpkg -I "${FILE}" | grep -E '^\s*Version:\s+' | awk '{print $2}' > VERSION
 
 script:
   - set -eux
   # files ------------------------------------------------------------
-  - rm -fv *.png *.svg
+  - rm -fv *.png *.svg usr/bin/gitkraken
   - ln usr/share/gitkraken/gitkraken.png .
   - ln -sfvr usr/share/gitkraken/gitkraken usr/bin/
+  - chmod +x usr/bin/gitkraken
   # desktop ----------------------------------------------------------
   - cat > gitkraken.desktop << EOF
   - [Desktop Entry]
