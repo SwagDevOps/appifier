@@ -6,6 +6,7 @@ autoload(:Pathname, 'pathname')
 # Provide a shell context collecting outputs into files.
 class Appifier::LoggedRunner
   include(Appifier::Mixins::Inject)
+  include(Appifier::Mixins::Immutable)
 
   # @return [String]
   attr_reader :mode
@@ -19,11 +20,11 @@ class Appifier::LoggedRunner
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
 
-    -> { self.freeze }.tap do
+    immutable do
       @directory = Pathname.new(directory).freeze
       @env = env.to_h.transform_values(&:freeze).freeze
       @mode = 'a'
-    end.call
+    end
   end
 
   # Call commands and collect logs by given names.
@@ -40,7 +41,7 @@ class Appifier::LoggedRunner
       prepare(name) do
         logs_for(name).transform_values { |v| File.open(v, self.mode) }.tap do |options|
           commands.each do |command|
-            self.class.cmd(command, env: self.env.dup, runner: ->(*args) { self.shell.sh(*args) }).call(options)
+            self.class.cmd(command, env: self.env.dup, runner: ->(*args) { self.shell.sh(*args) }).call(**options)
           end
         end
       end
