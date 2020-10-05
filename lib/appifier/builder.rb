@@ -9,6 +9,7 @@ autoload(:Open3, 'open3')
 # Builder
 class Appifier::Builder
   include(Appifier::Mixins::Inject)
+  include(Appifier::Mixins::Immutable)
 
   # @return [Appifier::Recipe]
   attr_reader :recipe
@@ -17,7 +18,7 @@ class Appifier::Builder
   #
   # @option kwargs [Boolean] :docker
   # @option kwargs [Boolean] :install
-  def initialize(recipe, docker: true, install: false, **kwargs)
+  def initialize(recipe, docker: true, install: false, **kwargs) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     # @formatter:off
     {
       config: kwargs[:config],
@@ -27,12 +28,14 @@ class Appifier::Builder
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
 
-    @recipe = Appifier::Recipe.new(recipe, config: self.config).freeze
-    # noinspection RubySimplifyBooleanInspection
-    @docker = !!docker
-    # noinspection RubySimplifyBooleanInspection
-    @installable = !!install
-    @tmpdir = self.config.fetch('cache_dir')
+    immutable do
+      @recipe = Appifier::Recipe.new(recipe, config: self.config).freeze
+      # noinspection RubySimplifyBooleanInspection
+      @docker = !!docker
+      # noinspection RubySimplifyBooleanInspection
+      @installable = !!install
+      @tmpdir = self.config.fetch('cache_dir').freeze
+    end
   end
 
   # Return an array of created files.
