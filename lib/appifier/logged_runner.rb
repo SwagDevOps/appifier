@@ -38,7 +38,7 @@ class Appifier::LoggedRunner
       prepare(name) do
         logs_for(name).transform_values { |v| File.open(v, self.mode) }.tap do |options|
           commands.each do |command|
-            shell.sh(*[env].concat(command).concat([options]))
+            self.class.cmd(command, env: self.env.dup, runner: ->(*args) { self.shell.sh(*args) }).call(options)
           end
         end
       end
@@ -46,6 +46,28 @@ class Appifier::LoggedRunner
   end
 
   protected
+
+  class << self
+    # Prepare command into a Struct able to execute itself.
+    #
+    # @api private
+    #
+    # @param [Array<String>] command
+    # @param [Hash<String => String>] env
+    #
+    # @return [Struct]
+    def cmd(command, env: {}, runner: nil)
+      if command[0].is_a?(Hash)
+        env = env.dup.merge(command[0])
+        command = command[1..-1]
+      end
+
+      Struct.new(:env, :args).new(env, command).tap do |cmd|
+        cmd.singleton_class.define_method(:to_a) { [cmd.env].concat(cmd.args) }
+        cmd.singleton_class.define_method(:call) { |**options| runner.call(*cmd.to_a.concat([options])) } if runner
+      end
+    end
+  end
 
   # @return [Pathname]
   attr_reader :directory
