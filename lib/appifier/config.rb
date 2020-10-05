@@ -38,6 +38,7 @@ class Appifier::Config < Hash
         bin_dir: whoami.fetch(:dir).join('.local', 'bin'),
         desktops_dir: whoami.fetch(:dir).join('.local', 'share', 'applications'),
         config_dir: xdg_dir(:config).join('appifier'),
+        docker_caching: false,
       }.tap do |defaults|
         defaults[:recipes_path] = [
           defaults.fetch(:config_dir).join('recipes'), # user defined recipes
