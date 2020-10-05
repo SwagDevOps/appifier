@@ -49,10 +49,10 @@ class Appifier::Builder
       {
         false => -> { last_build },
         true => lambda do
-                  [last_build]
-                    .concat(Appifier::Integration.new(last_build, recipe: recipe).call)
-                    .map { |fp| Pathname.new(fp) }.sort.uniq
-                end
+          [last_build]
+            .concat(Appifier::Integration.new(last_build, recipe: recipe).call)
+            .map { |fp| Pathname.new(fp) }.sort.uniq
+        end
       }.fetch(installable?).call
       # @formatter:on
     end
@@ -125,7 +125,8 @@ class Appifier::Builder
         fs.cp(recipe.file.to_s, f)
       end
 
-      scripts_runner.call(target, docker: docker?)
+      # @type [Appifier::Scripts::Runner] scripts_runner
+      scripts_runner.call(recipe, docker: docker?)
     end
   end
 
