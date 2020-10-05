@@ -12,16 +12,18 @@ class Appifier::LoggedRunner
 
   # @param [String] directory
   def initialize(directory, env: {}, **kwargs)
-    @directory = Pathname.new(directory).freeze
-    @env = env.to_h.transform_values(&:freeze).freeze
-    @mode = 'a'
-
     # @formatter:off
     {
       fs: kwargs[:fs],
       shell: kwargs[:shell],
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
+
+    -> { self.freeze }.tap do
+      @directory = Pathname.new(directory).freeze
+      @env = env.to_h.transform_values(&:freeze).freeze
+      @mode = 'a'
+    end.call
   end
 
   # Call commands and collect logs by given names.
