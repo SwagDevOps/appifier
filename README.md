@@ -29,3 +29,14 @@ Mailspring:
       'Desktop Entry':
         Icon: mailspring
 ```
+
+## About recipe variations
+
+Recipe can have variations, examples:
+
+* ``ffmpeg`` and ``ffmpeg_git``
+* ``rubymine`` and ``rubymine_eap``
+
+In this case, integration SHOULD produce the same result,
+on __desktop file name__ and __executable__, for both of them.
+As a result, it is a transparent experience to switch from variations.
