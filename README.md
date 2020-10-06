@@ -2,11 +2,14 @@
 
 ```
 Commands:
-  appifier build {RECIPE}  # Build
-  appifier help [COMMAND]  # Describe available commands or one specific command
+  appifier build {RECIPE}       # Build given recipe
+  appifier config               # Display config
+  appifier help [COMMAND]       # Describe available commands or one specific command
+  appifier list [PATTERN]       # List builds based on app name
+  appifier uninstall {PATTERN}  # Uninstall
 ```
 
-## Configuration 
+## Configuration
 
 ### integration config
 
@@ -26,4 +29,3 @@ Mailspring:
       'Desktop Entry':
         Icon: mailspring
 ```
-
