@@ -110,8 +110,7 @@ class Appifier::Integration
     { # @formatter:off
       name: recipe.to_h.fetch('app').to_s,
       executable: recipe.to_h.fetch('app').to_s.downcase,
-      logname: recipe.to_s,
-      exec_params: [], # @formatter:on
+      logname: recipe.to_s, # @formatter:on
     }.transform_keys(&:to_s).merge(recipe.to_h.fetch('integration', {})).yield_self do |h|
       self.class.__send__(:deep_merge, h, user_integrations[h.fetch('name')].to_h)
           .to_h
