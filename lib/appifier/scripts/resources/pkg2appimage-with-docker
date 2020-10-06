@@ -41,10 +41,10 @@ container_cache_args() {
 
   local app_name=${DOCKER_APP_NAME}
   test -z "${app_name}" && return 43 # Identifier removed
-  local build_dir=$(dirname -- pkg2appimage)
-  local build_path=${build_dir}/.docker/${app_name}
+  local build_path=$(pwd)/.docker/${app_name}
 
-  mkdir -pv "${build_path}"
+  mkdir -pv "${build_path}" >&2
+  readlink -f -- "${build_path}" >/dev/null 2>&1
 
   printf  -- '-v %s:%s' \
       "$(readlink -f -- "${build_path}")" \
