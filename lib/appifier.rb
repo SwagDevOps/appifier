@@ -21,6 +21,7 @@ module Appifier
     Container: 'container',
     DesktopDatabaseUpdater: 'desktop_database_updater',
     DownloadableString: 'downloadable_string',
+    Filesize: 'filesize',
     FileSystem: 'file_system',
     Recipe: 'recipe',
     Scripts: 'scripts',
