@@ -4,6 +4,11 @@
 {
   verbose: false,
   dry_run: false,
+  'utils.dupper': lambda do
+    autoload(:DeepDup, 'deep_dup')
+
+    ->(instance) { DeepDup.deep_dup(instance) }
+  end,
   config: -> { Appifier::Config.new },
   desktop_database_updater: -> { Appifier::DesktopDatabaseUpdater.new },
   fs: lambda do
