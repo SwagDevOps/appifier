@@ -2,7 +2,6 @@
 
 require_relative '../mixins'
 require 'json'
-autoload(:DeepDup, 'deep_dup')
 
 # Convert the object to a JSON representation.
 #
@@ -58,8 +57,10 @@ module Appifier::Mixins::Jsonable
   def as_json(*)
     {}.tap do |serialized|
       self.class.__send__(ClassMethods::STORE).each do |attr|
-        serialized[attr.to_sym] = public_send(attr).yield_self { |v| DeepDup.deep_dup(v) }
+        serialized[attr.to_sym] = public_send(attr)
       end
+    end.yield_self do |result|
+      json_dupper.call(result)
     end
   end
 
@@ -68,5 +69,15 @@ module Appifier::Mixins::Jsonable
   # @return [String]
   def to_json(*args)
     as_json.to_json(*args)
+  end
+
+  protected
+
+  # Deep duplicate Ruby objects.
+  #
+  # @return [Proc]
+  # @see https://github.com/ollie/deep_dup
+  def json_dupper
+    Appifier.container.resolve(:'utils.dupper')
   end
 end
