@@ -7,8 +7,10 @@ autoload(:YAML, 'yaml')
 
 # Config from environment variables.
 class Appifier::Config < Hash
+  include(Appifier::Mixins::Immutable)
+
   def initialize(from: ENV, prefix: 'APPIFIER')
-    @prefix = prefix
+    @prefix = prefix.to_s.freeze
 
     self.tap do
       self.class.__send__(:filter, from, prefix: self.prefix).tap do |filtered|
@@ -16,12 +18,13 @@ class Appifier::Config < Hash
           h.each { |k, v| self[k] = v }
         end
       end
-    end.compact!.freeze
+    end.compact!
   end
 
   def freeze
-    self.each_key { |k| self[k] = self[k].freeze }
-    super
+    -> { super }.tap do
+      immutable { self.transform_values(&:freeze) }
+    end.call
   end
 
   class << self
@@ -69,7 +72,8 @@ class Appifier::Config < Hash
       {
         cache: '.cache',
         config: '.config',
-      }.fetch(type.to_sym).yield_self do |path| # @formatter:on
+      }.fetch(type.to_sym).yield_self do |path|
+        # @formatter:on
         env.fetch("XDG_#{type.to_s.upcase}_HOME") do
           whoami.fetch(:dir).join(path)
         end.yield_self do |dir|
@@ -82,7 +86,7 @@ class Appifier::Config < Hash
     #
     # @api private
     #
-    # @return [Struct{Symbol => Object}]
+    # @return [Hash{Symbol => Object}]
     def whoami
       Etc.getpwnam(Etc.getlogin).to_h.tap do |h|
         h[:dir] = Pathname.new(h[:dir])
@@ -106,5 +110,6 @@ class Appifier::Config < Hash
 
   protected
 
+  # @return [String]
   attr_reader :prefix
 end
