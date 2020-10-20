@@ -20,7 +20,7 @@ class Appifier::LoggedRunner
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
 
-    immutable do
+    immutable! do
       @directory = Pathname.new(directory).freeze
       @env = env.to_h.transform_values(&:freeze).freeze
       @mode = 'a'
