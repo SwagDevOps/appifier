@@ -14,6 +14,8 @@ class Appifier::Filesize
   LIMITS = UNITS.map.with_index(1) { |key, exp| [key.freeze, 1024.pow(exp)] }.to_h.freeze
 
   # @param [Integer, Float] value
+  #
+  # @raise [ArgumentError] when given value is not a ``Numeric``
   def initialize(value)
     raise ArgumentError, "Numeric expected, got #{value.class}" unless value.is_a?(Numeric)
 
