@@ -28,7 +28,7 @@ class Appifier::Builder
     }.yield_self { |injection| inject(**injection) }.assert { !values.include?(nil) }
     # @formatter:on
 
-    immutable do
+    immutable! do
       @recipe = Appifier::Recipe.new(recipe, config: self.config).freeze
       # noinspection RubySimplifyBooleanInspection
       @docker = !!docker
