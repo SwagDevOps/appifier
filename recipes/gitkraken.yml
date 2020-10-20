@@ -32,6 +32,8 @@ script:
   - Exec=gitkraken %U
   - Categories=Development;IDE;
   - Comment=The downright luxurious Git client
+  - StartupNotify=false
+  - StartupWMClass=gitkraken
   - EOF
 
 integration:
