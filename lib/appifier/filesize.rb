@@ -39,6 +39,10 @@ class Appifier::Filesize
   end
 
   class << self
+    # Static constructor.
+    #
+    # @param [String] path
+    #
     # @return [Appifier::Filesize]
     def from_path(path)
       File.size(path).yield_self { |value| self.new(value) }
