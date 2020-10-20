@@ -26,9 +26,8 @@ RUN set -eux ;\
     # test user ---------------------------------------------------------------
     useradd --system --no-user-group --uid 1000 test ;\
     # cleanup -----------------------------------------------------------------
-    apt-get clean ;\
-    rm -rf /tmp/* /var/tmp/* ;\
-    rm -rf /var/lib/apt/lists/* ;\
+    apt-get -y clean autoclean ;\
+    rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* ;\
     # workdir -----------------------------------------------------------------
     install -m 0777 -d "${WORKDIR}"
 
