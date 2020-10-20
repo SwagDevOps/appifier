@@ -40,11 +40,12 @@ script:
   - rm -rf opt/*/bin/fsnotifier
 
 integration:
-  name: RubyMine
+  name: RubyMine_EAP
   executable: rubymine
   desktop:
-    name: 'jetbrains-rubymine'
+    name: 'rubymine'
     override:
       'Desktop Entry':
+        Name: 'Rubymine EAP'
         Exec: '{{executable.path}} %u'
         Icon: '{{icon.path}}'

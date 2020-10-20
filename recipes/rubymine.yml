@@ -43,7 +43,7 @@ integration:
   name: RubyMine
   executable: rubymine
   desktop:
-    name: 'jetbrains-rubymine'
+    name: 'rubymine'
     override:
       'Desktop Entry':
         Exec: '{{executable.path}} %u'
