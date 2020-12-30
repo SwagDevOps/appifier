@@ -40,7 +40,7 @@ script:
   - rm -rf opt/*/bin/fsnotifier
 
 integration:
-  name: RubyMine_EAP
+  name: RubyMine
   executable: rubymine
   desktop:
     name: 'rubymine'
