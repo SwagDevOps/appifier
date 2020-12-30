@@ -18,6 +18,7 @@ RUN set -eux ;\
     apt-get update ;\
     apt-get install -y --no-install-recommends \
         imagemagick \
+        binutils \
         libxml2-utils \
         apt-transport-https libcurl3-gnutls libarchive13 wget curl \
         desktop-file-utils aria2 fuse gnupg2 build-essential file \
