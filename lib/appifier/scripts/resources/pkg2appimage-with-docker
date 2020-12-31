@@ -4,7 +4,6 @@
 # @see https://github.com/AppImage/pkg2appimage/blob/7ca1e6efce190a0c81c863b23419a2a11ea434af/pkg2appimage-with-docker
 # @see https://github.com/AppImage/pkg2appimage/issues/373#issuecomment-666293168
 
-
 # Environement variables --------------------------------------------
 #
 # * ``DOCKER_APP_NAME`` (String)  used by pkg2appimage and docker to name build directory
@@ -24,10 +23,13 @@ CONTAINER_NAME="$(basename -- "${IMAGE_NAME}")_${CONTAINER_ID}.${UID}"
 main() {
     local recipe=$(prepare_recipe "${1}")
     local recipe_name=$(basename -- "${recipe}" .yml)
+    test -z "$recipe" && {
+        return 2 # ENOENT
+    }
 
     log info "Building ${recipe_name} in a container..."
     container_build
-    container_run "$recipe"
+    container_run "${1}"
 }
 
 container_build() {
@@ -35,24 +37,25 @@ container_build() {
 }
 
 container_cache_args() {
-  (test "${DOCKER_CACHING}" != 'true') && {
-    return 95 # Operation not supported
-  }
+    (test "${DOCKER_CACHING}" != 'true') && {
+        return 95 # Operation not supported
+    }
 
-  local app_name=${DOCKER_APP_NAME}
-  test -z "${app_name}" && return 43 # Identifier removed
-  local build_path=$(pwd)/.docker/${app_name}
+    local app_name=${DOCKER_APP_NAME}
+    test -z "${app_name}" && return 43 # Identifier removed
+    local build_path=$(pwd)/.docker/${app_name}
 
-  mkdir -pv "${build_path}" >&2
-  readlink -f -- "${build_path}" >/dev/null 2>&1
+    mkdir -pv "${build_path}" >&2
+    readlink -f -- "${build_path}" >/dev/null 2>&1
 
-  printf  -- '-v %s:%s' \
-      "$(readlink -f -- "${build_path}")" \
-      "/workspace/${app_name}"
+    printf -- '-v %s:%s' \
+        "$(readlink -f -- "${build_path}")" \
+        "/workspace/recipes/${app_name}"
 }
 
 container_run() {
-    local recipe=$1
+    local recipe_name=$(basename -- "${1}" .yml)
+    local recipe_file="/workspace/recipes/${recipe_name}.yml"
 
     log info "Running container (${CONTAINER_NAME})"
     trap cleanup 0 2 15
@@ -65,33 +68,20 @@ container_run() {
         $(container_cache_args && echo 'Mounting the build cache directory into the container' >&2) \
         -v "$(readlink -f -- out):/workspace/out" \
         -v "$(readlink -f -- pkg2appimage):/workspace/pkg2appimage:ro" \
-        -v "$(readlink -f -- "$recipe"):/workspace/${recipe}:ro" \
+        -v "$(readlink -f -- "${1}"):${recipe_file}:ro" \
         -v "$(readlink -f functions.sh):/workspace/functions.sh:ro" \
         -e ARCH="${ARCH:-x86_64}" \
         "${IMAGE_NAME}" \
-        ./pkg2appimage "$recipe"
+        ./pkg2appimage "$recipe_file"
 }
 
 prepare_recipe() {
-    local recipe=$1
-    recipe=$(
-        test "$(basename -- "${recipe}" .yml)" = "$recipe" || {
-            echo "$recipe"
-            return 0
-        }
-        echo "${recipe}.yml"
-    )
-
-    test -f "$recipe" || {
-        test -f "recipes/${recipe}" && {
-            recipe="recipes/${recipe}"
-        } || {
-            log warn "cannot access '${recipe}': No such file or directory"
-            return 2 # ENOENT
-        }
+    test -f "$1" || {
+        log warn "cannot access '${1}': No such file or directory"
+        return 2 # ENOENT
     }
 
-    echo "$recipe"
+    echo "/workspace/recipes/$(basename -- "${1}" .yml)"
 }
 
 log() {
