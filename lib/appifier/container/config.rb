@@ -36,6 +36,7 @@
       # @formatter:off
     end
   end,
+  'scripts.sequencer': -> { Appifier::Scripts::Sequence },
   uninstaller: -> { Appifier::Uninstaller.new },
   'uninstaller.lister': -> { Appifier::Uninstaller::Lister.new },
   printer: -> { Appifier::JsonPrinter.new },
