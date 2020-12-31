@@ -9,18 +9,27 @@ class Appifier::Scripts::Sequence < ::Array
   # fist item is actual executable script
   #
   # @api private
-  SCRIPTS = { # @formatter:off
+  # @see Appifier::Scripts::Runner#call
+  #
+  # @type [Hash{Boolean => Array<Symbol>}]
+  SCRIPTS = {
     true => [:Pkg2appimageWithDocker, :Dockerfile, :Pkg2appimage, :FunctionsSh],
     false => [:Pkg2appimage, :FunctionsSh]
   }.freeze
-  # @formatter:on
+
+  class << self
+    # Get an array of downloaded scripts.
+    #
+    # @return [Array<Appifier::DownloadableString>]
+    def call(docker)
+      self.new(docker).start
+    end
+  end
 
   # @param [Boolean] docker
   def initialize(docker)
     SCRIPTS.fetch(docker).each do |sym|
-      Appifier::Scripts::Downloadables.const_get(sym).tap do |klass|
-        self.push(klass)
-      end
+      resolve(sym).tap { |klass| self.push(klass) }
     end
   end
 
@@ -29,5 +38,14 @@ class Appifier::Scripts::Sequence < ::Array
   # @return [Array<Appifier::DownloadableString>]
   def start
     self.map { |klass| klass.new.tap(&:call) }.freeze
+  end
+
+  protected
+
+  # Resolve given name as a ``DownloadableString``.
+  #
+  # @return [Class<Appifier::DownloadableString>]
+  def resolve(name)
+    Appifier::Scripts::Downloadables.const_get(name.to_sym)
   end
 end
