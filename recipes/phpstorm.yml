@@ -34,6 +34,7 @@ script:
   - Categories=Development;IDE;
   - Terminal=false
   - StartupWMClass=jetbrains-phpstorm
+  - MimeType=text/plain;;inode/directory;
   - EOF
   - rm -rf opt/*/jbr/legal/*.desktop
   - rm -rf opt/*/bin/fsnotifier-arm
