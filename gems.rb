@@ -25,7 +25,7 @@ group :development do
   end
 
   gem 'rake', '~> 13.0'
-  gem 'rubocop', '~> 0.79'
+  gem 'rubocop', '~> 1.0'
   gem 'rugged', '~> 1.0'
 end
 
