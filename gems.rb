@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # ```sh
-# bundle config set clean 'true'
-# bundle config set path 'vendor/bundle'
+# bundle config set --local clean 'true'
+# bundle config set --local path 'vendor/bundle'
 # bundle install
 # ```
 source 'https://rubygems.org'
