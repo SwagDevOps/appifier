@@ -2,7 +2,7 @@
 
 require_relative '../integration'
 autoload(:Pathname, 'pathname')
-autoload(:IniParser, 'iniparser')
+autoload(:IniParse, 'iniparse')
 
 # Describe a desktop file.
 class Appifier::Integration::Desktop < Pathname
@@ -10,15 +10,15 @@ class Appifier::Integration::Desktop < Pathname
   attr_reader :variables
 
   def initialize(path, variables = {}, template: Appifier.container[:template])
-    super(path)
-
-    @variables = variables.dup.freeze
-    @template = template
+    super(path).tap do
+      @variables = variables.dup.freeze
+      @template = template.freeze
+    end.freeze
   end
 
   # @return [Hash]
   def parse
-    IniParser::Parser.new(read).parse
+    IniParse.parse(self.read).to_h
   end
 
   def fetch(*args, &block)
@@ -40,7 +40,9 @@ class Appifier::Integration::Desktop < Pathname
     [].tap do |lines|
       self.class.merge(self.to_h, merged.to_h).each do |section_title, section|
         lines << "[#{section_title}]"
-        section.each { |k, v| lines << "#{k}=#{template.call(v, variables)}" }
+        section.each do |k, v|
+          lines << "#{k}=#{template.call(v.to_s, variables)}"
+        end
       end
     end.compact.join("\n")
   end

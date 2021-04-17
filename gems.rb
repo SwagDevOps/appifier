@@ -11,7 +11,7 @@ git_source(:github) { |name| "https://github.com/#{name}.git" }
 group :default do
   gem 'deep_dup', '~> 0.0.3'
   gem 'dry-container', '~> 0.4'
-  gem 'iniparser', '~> 1.0'
+  gem 'iniparse', '~> 1.0'
   gem 'kamaze-version', '~> 1.0'
   gem 'liquid', '~> 4.0'
   gem 'rouge', '~> 3.21'
