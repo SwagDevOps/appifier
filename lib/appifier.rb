@@ -16,6 +16,7 @@ module Appifier
     BaseCli: 'base_cli',
     Builder: 'builder',
     BuildsLister: 'builds_lister',
+    Bundleable: 'bundleable',
     Cli: 'cli',
     Config: 'config',
     Container: 'container',
@@ -37,13 +38,7 @@ module Appifier
   }.each { |s, fp| autoload(s, "#{__dir__}/appifier/#{fp}") }
   # @formatter:on
 
-  include(Bundled).tap do
-    require 'bundler/setup' if bundled?
-
-    if Gem::Specification.find_all_by_name('kamaze-project').any?
-      require 'kamaze/project/core_ext/pp' if development?
-    end
-  end
+  include(Bundleable)
 
   class << self
     # Get container (inversion of control), almost a service locator.
