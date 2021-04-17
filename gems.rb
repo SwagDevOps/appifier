@@ -15,6 +15,7 @@ group :default do
   gem 'kamaze-version', '~> 1.0'
   gem 'liquid', '~> 4.0'
   gem 'rouge', '~> 3.21'
+  gem 'stibium-bundled', '~> 0.0.1', '>= 0.0.4'
   gem 'sys-proc', '~> 1.1'
   gem 'thor', '~> 1.0'
 end

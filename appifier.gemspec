@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
     "lib/appifier/builds_lister.rb",
     "lib/appifier/builds_lister/build.rb",
     "lib/appifier/builds_lister/scan_result.rb",
-    "lib/appifier/bundled.rb",
+    "lib/appifier/bundleable.rb",
     "lib/appifier/cli.rb",
     "lib/appifier/cli/runner.rb",
     "lib/appifier/config.rb",
@@ -97,6 +97,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("kamaze-version", ["~> 1.0"])
   s.add_runtime_dependency("liquid", ["~> 4.0"])
   s.add_runtime_dependency("rouge", ["~> 3.21"])
+  s.add_runtime_dependency("stibium-bundled", ["~> 0.0.1", ">= 0.0.4"])
   s.add_runtime_dependency("sys-proc", ["~> 1.1"])
   s.add_runtime_dependency("thor", ["~> 1.0"])
 
