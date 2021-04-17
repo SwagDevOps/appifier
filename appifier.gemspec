@@ -35,9 +35,12 @@ Gem::Specification.new do |s|
     "lib/appifier/config.rb",
     "lib/appifier/container.rb",
     "lib/appifier/container/config.rb",
+    "lib/appifier/desktop_database_updater.rb",
     "lib/appifier/downloadable_string.rb",
     "lib/appifier/file_system.rb",
     "lib/appifier/file_url.rb",
+    "lib/appifier/filesize.rb",
+    "lib/appifier/installer.rb",
     "lib/appifier/integration.rb",
     "lib/appifier/integration/builds_list.rb",
     "lib/appifier/integration/desktop.rb",
@@ -48,22 +51,29 @@ Gem::Specification.new do |s|
     "lib/appifier/logged_runner.rb",
     "lib/appifier/mixins.rb",
     "lib/appifier/mixins/hash_glob.rb",
+    "lib/appifier/mixins/immutable.rb",
     "lib/appifier/mixins/inject.rb",
     "lib/appifier/mixins/jsonable.rb",
-    "lib/appifier/mixins/shell.rb",
     "lib/appifier/mixins/verbose.rb",
     "lib/appifier/recipe.rb",
     "lib/appifier/recipes/caprine.yml",
     "lib/appifier/recipes/chromium_canary.yml",
     "lib/appifier/recipes/ffmpeg.yml",
     "lib/appifier/recipes/ffmpeg_git.yml",
+    "lib/appifier/recipes/gitahead.yml",
     "lib/appifier/recipes/gitkraken.yml",
     "lib/appifier/recipes/insomnia.yml",
     "lib/appifier/recipes/mailspring.yml",
     "lib/appifier/recipes/molotov.yml",
+    "lib/appifier/recipes/mupdf.yml",
     "lib/appifier/recipes/notes.yml",
+    "lib/appifier/recipes/phpstorm.yml",
     "lib/appifier/recipes/rocketchat.yml",
     "lib/appifier/recipes/rubymine.yml",
+    "lib/appifier/recipes/rubymine_eap.yml",
+    "lib/appifier/recipes/slack.yml",
+    "lib/appifier/recipes_lister.rb",
+    "lib/appifier/recipes_lister/result.rb",
     "lib/appifier/scripts.rb",
     "lib/appifier/scripts/downloadables.rb",
     "lib/appifier/scripts/downloadables/dockerfile.rb",
@@ -83,7 +93,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency("deep_dup", ["~> 0.0.3"])
   s.add_runtime_dependency("dry-container", ["~> 0.4"])
-  s.add_runtime_dependency("iniparser", ["~> 1.0"])
+  s.add_runtime_dependency("iniparse", ["~> 1.0"])
   s.add_runtime_dependency("kamaze-version", ["~> 1.0"])
   s.add_runtime_dependency("liquid", ["~> 4.0"])
   s.add_runtime_dependency("rouge", ["~> 3.21"])
