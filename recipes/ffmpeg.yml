@@ -16,8 +16,8 @@ ingredients:
     - ICON_URL='https://appimage.org/images/logo3.svg'
     - DLD='https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz'
     # output files ---------------------------------------------------
-    - wget --trust-server-names -c "${ICON_URL}" -O ffmpeg.svg
-    - wget --trust-server-names -c "$DLD" -O 'ffmpeg.tar.xz'
+    - wget --no-check-certificate -c "${ICON_URL}" -O ffmpeg.svg
+    - wget --no-check-certificate -c "$DLD" -O 'ffmpeg.tar.xz'
     - tar -xvf ffmpeg.tar.xz
     - grep -Ei '^\s*version:' */readme.txt | awk -F':' '{print $2}' | awk '{print $1}' | head -1 > VERSION
 
