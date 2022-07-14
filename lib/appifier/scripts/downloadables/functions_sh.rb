@@ -27,6 +27,7 @@ class Appifier::Scripts::Downloadables::FunctionsSh < Appifier::DownloadableStri
       # @formatter:off
       {
         %r{(https://github\.com/AppImage/AppImageKit/releases/download)/continuous/(AppRun-|appimagetool-)} => "\\1/#{release}/\\2",
+        /^(\s+wget -c)\s+/ => '\\1 --no-check-certificate ',
       }
       # @formatter:on
       # rubocop:enable Layout/LineLength

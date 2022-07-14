@@ -13,7 +13,8 @@ class Appifier::Scripts::Downloadables::Pkg2appimage < Appifier::DownloadableStr
       # @formatter:off
       {
         /^(\s*)if \[ ! -z \$ARCH\]/ => '\\1if [ ! -z "$ARCH" ]',
-        /^(\s*OPTIONS="\$OPTIONS -o APT::Architecture=)\$ARCH"/ => "\\1#{apt_arch}\""
+        /^(\s*OPTIONS="\$OPTIONS -o APT::Architecture=)\$ARCH"/ => "\\1#{apt_arch}\"",
+        /^(\s+wget -c)\s+/ => '\\1 --no-check-certificate ',
       }
       # @formatter:on
     end
