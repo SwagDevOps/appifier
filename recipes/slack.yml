@@ -13,7 +13,7 @@ ingredients:
     - SHORTNAME=slack
     - RELEASES_URL='https://slack.com/intl/en/release-notes/linux'
     - PLATFORM=\$(uname -i)
-    - DLD_URL_PATTERN='https://downloads.slack-edge.com/linux_releases/slack-desktop-%s-amd64.deb'
+    - DLD_URL_PATTERN='https://''downloads.slack-edge.com/releases/linux/4.27.156/prod/x64/slack-desktop-%s-amd64.deb'
     - FILE=\$(head -10 /dev/urandom | tr -cd '[:alnum:]' | cut -c -32).part
     - # computed variables --------------------------------------------
     - RELEASES=\$(wget --trust-server-names -qO- "\${RELEASES_URL}" | xmllint  --html --xpath 'string(//h2)' - | sed 's/Slack //g')
