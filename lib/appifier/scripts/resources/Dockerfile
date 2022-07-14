@@ -1,6 +1,6 @@
 # Beware: only meant for use with pkg2appimage-with-docker
 
-FROM ubuntu:trusty
+FROM ubuntu:16.04
 
 ENV TZ=UTC \
     LC_ALL=C.UTF-8 \
@@ -17,6 +17,7 @@ RUN set -eux ;\
     sed -i 's/archive.ubuntu.com/ftp.fau.de/g' /etc/apt/sources.list ;\
     apt-get update ;\
     apt-get install -y --no-install-recommends \
+        ca-certificates \
         imagemagick \
         binutils \
         libxml2-utils \
@@ -24,6 +25,8 @@ RUN set -eux ;\
         desktop-file-utils aria2 fuse gnupg2 build-essential file \
         libglib2.0-bin \
         git jq unzip ;\
+    # updgrade ----------------------------------------------------------------
+    apt-get upgrade -y; \
     # test user ---------------------------------------------------------------
     useradd --system --no-user-group --uid 1000 test ;\
     # cleanup -----------------------------------------------------------------
