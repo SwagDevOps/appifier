@@ -14,7 +14,7 @@ ingredients:
     # cleanup --------------------------------------------------------
     - rm -rfv *.gz VERSION *.png *.svg *.deb *.sh tmp/
     # download -------------------------------------------------------
-    - wget -c "${PACKAGE_URL}" -O "${FILE}"
+    - wget -c --no-check-certificate "${PACKAGE_URL}" -O "${FILE}"
     # version --------------------------------------------------------
     - dpkg -I "${FILE}" | grep -E '^\s*Version:\s+' | awk '{print $2}' > VERSION
 
