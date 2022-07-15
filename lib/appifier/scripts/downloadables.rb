@@ -10,6 +10,7 @@ module Appifier::Scripts::Downloadables
     FunctionsSh: 'functions_sh',
     Pkg2appimageWithDocker: 'pkg2appimage_with_docker',
     Dockerfile: 'dockerfile',
+    ExcludeList: 'exclude_list',
   }.each { |s, fp| autoload(s, "#{__dir__}/downloadables/#{fp}") }
   # @formatter:on
 end

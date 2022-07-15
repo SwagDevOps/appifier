@@ -13,8 +13,8 @@ class Appifier::Scripts::Sequence < ::Array
   #
   # @type [Hash{Boolean => Array<Symbol>}]
   SCRIPTS = {
-    true => [:Pkg2appimageWithDocker, :Dockerfile, :Pkg2appimage, :FunctionsSh],
-    false => [:Pkg2appimage, :FunctionsSh]
+    true => [:Pkg2appimageWithDocker, :Dockerfile, :Pkg2appimage, :FunctionsSh, :ExcludeList],
+    false => [:Pkg2appimage, :FunctionsSh, :ExcludeList]
   }.freeze
 
   class << self
@@ -28,6 +28,8 @@ class Appifier::Scripts::Sequence < ::Array
 
   # @param [Boolean] docker
   def initialize(docker)
+    super()
+
     SCRIPTS.fetch(docker).each do |sym|
       resolve(sym).tap { |klass| self.push(klass) }
     end

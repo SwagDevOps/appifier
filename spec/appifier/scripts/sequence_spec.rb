@@ -6,12 +6,14 @@ describe Appifier::Scripts::Sequence, :'appifier/scripts/sequence' do
     false => [
       Appifier::Scripts::Downloadables::Pkg2appimage,
       Appifier::Scripts::Downloadables::FunctionsSh,
+      Appifier::Scripts::Downloadables::ExcludeList,
     ],
     true => [
       Appifier::Scripts::Downloadables::Pkg2appimageWithDocker,
       Appifier::Scripts::Downloadables::Dockerfile,
       Appifier::Scripts::Downloadables::Pkg2appimage,
       Appifier::Scripts::Downloadables::FunctionsSh,
+      Appifier::Scripts::Downloadables::ExcludeList,
     ],
   }.each do |k, v|
     # @formatter:on
