@@ -23,8 +23,10 @@ class Appifier::BuildsLister::Build
   # @return [Pathname]
   attr_reader :path
 
+  # rubocop:disable Metrics/MethodLength
+
   # @param [String] path
-  def initialize(path) # rubocop:disable Metrics/MethodLength
+  def initialize(path)
     immutable! do
       @path = Pathname.new(path).freeze
       self.class.__send__(:mtime, path).freeze.tap do |mtime|
@@ -37,6 +39,7 @@ class Appifier::BuildsLister::Build
       end
     end
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Get detail about build (public instance_variables).
   #
@@ -82,27 +85,18 @@ class Appifier::BuildsLister::Build
 
   protected
 
-  # Denote name and version can be extracted from path.
-  #
-  # @return [Boolean]
-  # @api private
-  def extractable?
-    !to_s.scan(version_matcher).to_a.empty?
-  end
-
-  # @return [Regexp]
-  def version_matcher
-    %r{^#{path.dirname}/+(.*)-(([0-9]+.*)|).glibc}
+  # @return [String]
+  def filename
+    path.basename.to_s
   end
 
   # @return [Struct]
   def extract
     Struct.new(:name, :version).yield_self do |result_struct|
-      return result_struct.new(nil, nil) unless extractable?
+      name = filename.split('-')[0]
+      version = filename.gsub(/^#{name}-/, '').split('.glibc')[0]
 
-      to_s.scan(version_matcher).to_a.fetch(0).yield_self do |r|
-        result_struct.new(r.fetch(0).freeze, (r[1].to_s.empty? ? nil : r[1].to_s).freeze)
-      end
+      result_struct.new(name.freeze, version.freeze)
     end
   end
 
