@@ -10,20 +10,23 @@ ingredients:
     - cat > "${SCRIPT}" << EOF
     - set -eux
     # variables ------------------------------------------------------
-    - SHORTNAME=molotov
-    - VERSION_URL='https://desktop-auto-upgrade.molotov.tv/linux/manifest.json'
-    - VERSION=\$(curl -L "\${VERSION_URL}" | jq -r '.version' | sed 's/^v//')
-    - DOWNLOAD_URL="http://desktop-auto-upgrade.molotov.tv/linux/\${VERSION}/\${SHORTNAME}.AppImage"
+    - MANIFEST_URL='https://desktop-auto-upgrade.molotov.tv/linux/manifest.json'
+    - CONTENTS=\$(curl -kL "\${MANIFEST_URL}")
+    - VERSION=\$(echo "\${CONTENTS}" | jq -r '.version' | sed 's/^v//')
+    - DOWNLOAD_URL=\$(echo "\${CONTENTS}" | jq -r '.url' | sed 's/^v//')
     - FILE=\$(head -10 /dev/urandom | tr -cd '[:alnum:]' | cut -c -32).part
-    # ensure version -------------------------------------------------
+    # ensure variables -----------------------------------------------
     - test -n "\${VERSION}"
+    - test -n "\${DOWNLOAD_URL}"
     # output files ---------------------------------------------------
     - echo "\${VERSION}" > VERSION
-    - wget --trust-server-names "\${DOWNLOAD_URL}" -O "\${FILE}"
+    - wget -c --trust-server-names --no-check-certificate "\${DOWNLOAD_URL}" -O "\${FILE}"
     - chmod +x "\${FILE}"
     - ./"\${FILE}" --appimage-extract
+    - rm -fv "\${FILE}"
     # ensure extracted directory -------------------------------------
     - test -d squashfs-root
+    # execution ------------------------------------------------------
     - EOF
     - /usr/bin/env sh "${SCRIPT}"
 
