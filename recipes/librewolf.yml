@@ -43,6 +43,7 @@ integration:
     name: librewolf
     override:
       'Desktop Entry':
+        StartupWMClass: librewolf
         Exec: '{{executable.path}} %u'
         Icon: '{{icon.path}}'
         Comment: 'A fork of Firefox, focused on privacy, security and freedom.'
