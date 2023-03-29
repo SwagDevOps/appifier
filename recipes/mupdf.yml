@@ -15,7 +15,7 @@ ingredients:
     - set -eux
     - # variables -----------------------------------------------------
     - SHORTNAME=mupdf
-    - RELEASES_URL='https://mupdf.com/downloads/'
+    - RELEASES_URL='https://mupdf.com/releases/'
     - ICON_URL='https://upload.wikimedia.org/wikipedia/commons/c/ce/MuPDF.svg'
     - PLATFORM=\$(uname -i)
     - FILE=\$(head -10 /dev/urandom | tr -cd '[:alnum:]' | cut -c -32).part
